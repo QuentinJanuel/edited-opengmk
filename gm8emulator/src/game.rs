@@ -52,11 +52,11 @@ use gm8exe::asset::{
 };
 use includedfile::IncludedFile;
 use indexmap::IndexMap;
-use ramen::{
-    event::Event,
-    monitor::Size,
-    window::{Controls, Window},
-};
+// use ramen::{
+//     event::Event,
+//     monitor::Size,
+//     window::{Controls, Window},
+// };
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
@@ -174,7 +174,7 @@ pub struct Game {
     pub audio: audio::AudioManager,
 
     // winit windowing
-    pub window: Window,
+    // pub window: Window,
     pub window_border: bool,
     pub window_caption: String,
     pub window_cursor_gml: i32,
@@ -543,32 +543,32 @@ impl Game {
         let (width, height) = options.size;
         let window_border = !settings.dont_draw_border;
         let window_icons = !settings.dont_show_buttons;
-        let window = Window::builder()
-            .visible(false)
-            .inner_size(Size::Physical(width.into(), height.into()))
-            .borderless(!window_border && play_type != PlayType::Record)
-            .title(room1_caption.to_owned())
-            .resizable(match play_type {
-                PlayType::Normal => settings.allow_resize,
-                PlayType::Record => true,
-                PlayType::Replay => false,
-            })
-            .controls(if play_type == PlayType::Record {
-                Some(Controls::enabled())
-            } else if window_icons {
-                Some(Controls::new(settings.allow_resize, settings.allow_resize, true))
-            } else {
-                None
-            })
-            .build()
-            .expect("oh no");
+        // let window = Window::builder()
+        //     .visible(false)
+        //     .inner_size(Size::Physical(width.into(), height.into()))
+        //     .borderless(!window_border && play_type != PlayType::Record)
+        //     .title(room1_caption.to_owned())
+        //     .resizable(match play_type {
+        //         PlayType::Normal => settings.allow_resize,
+        //         PlayType::Record => true,
+        //         PlayType::Replay => false,
+        //     })
+        //     .controls(if play_type == PlayType::Record {
+        //         Some(Controls::enabled())
+        //     } else if window_icons {
+        //         Some(Controls::new(settings.allow_resize, settings.allow_resize, true))
+        //     } else {
+        //         None
+        //     })
+        //     .build()
+        //     .expect("oh no");
 
         // Set up audio manager
         let mut audio = audio::AudioManager::new(play_type != PlayType::Record);
 
         // TODO: specific flags here (make wb mutable)
 
-        let mut renderer = Renderer::new((), &options, &window, settings.clear_colour.into())?;
+        let mut renderer = Renderer::new((), &options/* , &window*/, settings.clear_colour.into())?;
 
         let mut atlases = AtlasBuilder::new(renderer.max_texture_size() as _);
 
@@ -1146,7 +1146,7 @@ impl Game {
                                 height: Cell::new(t.height as _),
                                 depth: Cell::new(t.depth.into()),
                                 id: Cell::new(t.id),
-                                alpha: Cell::new(Real::from(t.blend >> 24) / Real::from(255)),
+                                alpha: Cell::new(Real::from(t.blend >> 24) / Real::from(255.0)),
                                 blend: Cell::new((t.blend & 0xFFFFFF) as i32),
                                 xscale: Cell::new(t.xscale.into()),
                                 yscale: Cell::new(t.yscale.into()),
@@ -1268,7 +1268,7 @@ impl Game {
             error_occurred: false,
             error_last: "".to_string().into(),
             audio,
-            window,
+            // window,
             window_border,
             window_icons,
             close_requested: false,
@@ -1324,7 +1324,7 @@ impl Game {
         game.globals.vars.clear();
         game.globalvars.clear();
 
-        game.window.set_visible(true);
+        // game.window.set_visible(true);
 
         Ok(game)
     }
@@ -1423,7 +1423,7 @@ impl Game {
             };
             if self.play_type != PlayType::Record {
                 self.window_inner_size = (width, height);
-                self.window.set_inner_size(Size::Physical(width, height));
+                // self.window.set_inner_size(Size::Physical(width, height));
             }
         }
     }
@@ -1956,27 +1956,27 @@ impl Game {
 
     pub fn process_window_events(&mut self) {
         self.input.mouse_step();
-        self.window.swap_events();
+        // self.window.swap_events();
         match self.play_type {
             PlayType::Normal => {
-                for event in self.window.events() {
-                    match event {
-                        Event::KeyboardDown(key) => self.input.button_press(input::ramen2vk(*key), true),
-                        Event::KeyboardUp(key) => self.input.button_release(input::ramen2vk(*key), true),
-                        Event::MouseMove((point, scale)) => {
-                            let (x, y) = point.as_physical(*scale);
-                            if let (Ok(x), Ok(y)) = (i32::try_from(x), i32::try_from(y)) {
-                                self.input.mouse_move_to((x, y));
-                            }
-                        },
-                        Event::MouseDown(button) => self.input.mouse_press(input::ramen2mb(*button), true),
-                        Event::MouseUp(button) => self.input.mouse_release(input::ramen2mb(*button), true),
-                        Event::MouseWheel(x) => self.input.mouse_scroll(*x),
-                        Event::Resize((size, scale)) => self.window_inner_size = size.as_physical(*scale),
-                        Event::CloseRequest(_) => self.close_requested = true,
-                        _ => (),
-                    }
-                }
+                // for event in self.window.events() {
+                //     match event {
+                //         Event::KeyboardDown(key) => self.input.button_press(input::ramen2vk(*key), true),
+                //         Event::KeyboardUp(key) => self.input.button_release(input::ramen2vk(*key), true),
+                //         Event::MouseMove((point, scale)) => {
+                //             let (x, y) = point.as_physical(*scale);
+                //             if let (Ok(x), Ok(y)) = (i32::try_from(x), i32::try_from(y)) {
+                //                 self.input.mouse_move_to((x, y));
+                //             }
+                //         },
+                //         Event::MouseDown(button) => self.input.mouse_press(input::ramen2mb(*button), true),
+                //         Event::MouseUp(button) => self.input.mouse_release(input::ramen2mb(*button), true),
+                //         Event::MouseWheel(x) => self.input.mouse_scroll(*x),
+                //         Event::Resize((size, scale)) => self.window_inner_size = size.as_physical(*scale),
+                //         Event::CloseRequest(_) => self.close_requested = true,
+                //         _ => (),
+                //     }
+                // }
             },
             _ => (),
         }
@@ -2159,7 +2159,7 @@ impl Game {
 
         let mut time_now = Instant::now();
         loop {
-            self.window.swap_events();
+            // self.window.swap_events();
             self.input.mouse_step();
             if let Some(frame) = replay.get_frame(frame_count) {
                 if !self.stored_events.is_empty() {

@@ -185,7 +185,7 @@ impl Game {
 
     pub fn window_set_visible(&mut self, args: &[Value]) -> gml::Result<Value> {
         let visible = expect_args!(args, [bool])?;
-        self.window.set_visible(visible);
+        // self.window.set_visible(visible);
         Ok(Default::default())
     }
 
@@ -212,7 +212,7 @@ impl Game {
         if show_border != self.window_border {
             self.window_border = show_border;
             if self.play_type != PlayType::Record {
-                self.window.set_borderless(!show_border);
+                // self.window.set_borderless(!show_border);
             }
         }
         Ok(Default::default())
@@ -228,9 +228,9 @@ impl Game {
         if show_icons != self.window_icons {
             self.window_icons = show_icons;
             if self.play_type != PlayType::Record {
-                self.window.set_controls({
-                    if self.window_icons { Some(ramen::window::Controls::enabled()) } else { None }
-                })
+                // self.window.set_controls({
+                //     if self.window_icons { Some(ramen::window::Controls::enabled()) } else { None }
+                // })
             }
         }
         Ok(Default::default())
@@ -256,7 +256,7 @@ impl Game {
         if sizeable != self.window_sizeable {
             self.window_sizeable = sizeable;
             if self.play_type != PlayType::Record {
-                self.window.set_resizable(self.window_sizeable);
+                // self.window.set_resizable(self.window_sizeable);
             }
         }
         Ok(Default::default())
@@ -270,7 +270,7 @@ impl Game {
     pub fn window_set_caption(&mut self, args: &[Value]) -> gml::Result<Value> {
         let caption = expect_args!(args, [string])?;
         if self.play_type == PlayType::Record {
-            self.window.set_title(caption.as_ref());
+            // self.window.set_title(caption.as_ref());
         }
         self.window_caption = caption.into_owned();
         Ok(Default::default())
@@ -313,7 +313,7 @@ impl Game {
             },
         };
         if self.play_type == PlayType::Normal {
-            self.window.set_cursor(cursor);
+            // self.window.set_cursor(cursor);
         }
         self.window_cursor_gml = code;
         Ok(Default::default())
@@ -345,14 +345,14 @@ impl Game {
         let (width, height) = expect_args!(args, [int, int])?;
         if width > 0 && height > 0 {
             self.window_inner_size = (width as u32, height as u32);
-            self.window.execute(|window| {
-                use ramen::monitor::Size;
-                if window.is_dpi_logical() {
-                    unimplemented!();
-                } else {
-                    window.set_inner_size(Size::Physical(width as u32, height as u32));
-                }
-            });
+            // self.window.execute(|window| {
+            //     use ramen::monitor::Size;
+            //     if window.is_dpi_logical() {
+            //         unimplemented!();
+            //     } else {
+            //         window.set_inner_size(Size::Physical(width as u32, height as u32));
+            //     }
+            // });
         }
         Ok(Default::default())
     }
@@ -413,8 +413,8 @@ impl Game {
     pub fn window_set_region_scale(&mut self, args: &[Value]) -> gml::Result<Value> {
         let (scaling, shrink_window) = expect_args!(args, [real, bool])?;
         let scaling = match scaling {
-            n if n == 0.into() => Scaling::Full,
-            n if n < 0.into() => Scaling::Aspect(n.into_inner()),
+            n if n == 0.0.into() => Scaling::Full,
+            n if n < 0.0.into() => Scaling::Aspect(n.into_inner()),
             n => Scaling::Fixed(n.into_inner()),
         };
         self.scaling = scaling;
@@ -428,7 +428,7 @@ impl Game {
                 (region_w, region_h)
             };
             self.window_inner_size = (width, height);
-            self.window.set_inner_size(ramen::monitor::Size::Physical(width, height));
+            // self.window.set_inner_size(ramen::monitor::Size::Physical(width, height));
         }
         Ok(Default::default())
     }
@@ -3543,7 +3543,7 @@ impl Game {
         } else {
             Cursor::Blank
         };
-        self.window.set_cursor(cursor);
+        // self.window.set_cursor(cursor);
         Ok(Default::default())
     }
 
@@ -7641,8 +7641,9 @@ impl Game {
         expect_args!(args, [])?;
         #[cfg(target_os = "windows")]
         {
-            use ramen::platform::win32::WindowExt as _;
-            Ok((self.window.hwnd() as usize).into())
+            // use ramen::platform::win32::WindowExt as _;
+            // Ok((self.window.hwnd() as usize).into())
+            Ok(0.0.into())
         }
         // TODO: Others! (They'll compile error here so it'll remind me)
     }
@@ -13673,7 +13674,7 @@ impl Game {
             if self.gm_version == Version::GameMaker8_1 {
                 let cache = model.cache.as_mut().unwrap();
                 if let Some(old_col) = model.old_draw_colour {
-                    cache.swap_colour(old_col, draw_colour);
+                    // cache.swap_colour(old_col, draw_colour);
                     model.old_draw_colour = Some(draw_colour);
                 }
                 self.renderer.draw_buffers(atlas_ref, cache);

@@ -397,7 +397,7 @@ impl Game {
             }
         }
 
-        self.window.set_inner_size(Size::Physical(config.ui_width.into(), config.ui_height.into()));
+        // self.window.set_inner_size(Size::Physical(config.ui_width.into(), config.ui_height.into()));
 
         for (i, state) in keyboard_state.iter_mut().enumerate() {
             if self.input.keyboard_check_direct(i as u8) {
@@ -428,46 +428,46 @@ impl Game {
             io.set_mouse_wheel(0.0);
 
             // poll window events
-            self.window.swap_events();
-            for event in self.window.events() {
-                match event {
-                    ev @ Event::KeyboardDown(key) | ev @ Event::KeyboardUp(key) => {
-                        setting_mouse_pos = false;
-                        let state = matches!(ev, Event::KeyboardDown(_));
-                        io.set_key(usize::from(input::ramen2vk(*key)), state);
-                        match key {
-                            Key::LShift | Key::RShift => io.set_shift(state),
-                            Key::LControl | Key::RControl => io.set_ctrl(state),
-                            Key::LAlt | Key::RAlt => io.set_alt(state),
-                            _ => (),
-                        }
-                    },
-                    Event::MouseMove((point, scale)) => {
-                        let (x, y) = point.as_physical(*scale);
-                        io.set_mouse(imgui::Vec2(x as f32, y as f32));
-                    },
-                    ev @ Event::MouseDown(btn) | ev @ Event::MouseUp(btn) => usize::try_from(input::ramen2mb(*btn))
-                        .ok()
-                        .and_then(|x| x.checked_sub(1))
-                        .into_iter()
-                        .for_each(|x| io.set_mouse_button(x, matches!(ev, Event::MouseDown(_)))),
-                    Event::MouseWheel(delta) => io.set_mouse_wheel(delta.get() as f32 / 120.0),
-                    Event::Resize((size, scale)) => {
-                        let (width, height) = size.as_physical(*scale);
-                        config.ui_width = u16::try_from(width).unwrap_or(u16::MAX);
-                        config.ui_height = u16::try_from(height).unwrap_or(u16::MAX);
-                        io.set_display_size(imgui::Vec2(width as f32, height as f32));
-                        self.renderer.resize_framebuffer(width, height, false);
-                        context_menu = None;
-                    },
-                    Event::Focus(false) => {
-                        io.clear_inputs();
-                        context_menu = None;
-                    },
-                    Event::CloseRequest(_) => break 'gui,
-                    _ => (),
-                }
-            }
+            // self.window.swap_events();
+            // for event in self.window.events() {
+            //     match event {
+            //         ev @ Event::KeyboardDown(key) | ev @ Event::KeyboardUp(key) => {
+            //             setting_mouse_pos = false;
+            //             let state = matches!(ev, Event::KeyboardDown(_));
+            //             io.set_key(usize::from(input::ramen2vk(*key)), state);
+            //             match key {
+            //                 Key::LShift | Key::RShift => io.set_shift(state),
+            //                 Key::LControl | Key::RControl => io.set_ctrl(state),
+            //                 Key::LAlt | Key::RAlt => io.set_alt(state),
+            //                 _ => (),
+            //             }
+            //         },
+            //         Event::MouseMove((point, scale)) => {
+            //             let (x, y) = point.as_physical(*scale);
+            //             io.set_mouse(imgui::Vec2(x as f32, y as f32));
+            //         },
+            //         ev @ Event::MouseDown(btn) | ev @ Event::MouseUp(btn) => usize::try_from(input::ramen2mb(*btn))
+            //             .ok()
+            //             .and_then(|x| x.checked_sub(1))
+            //             .into_iter()
+            //             .for_each(|x| io.set_mouse_button(x, matches!(ev, Event::MouseDown(_)))),
+            //         Event::MouseWheel(delta) => io.set_mouse_wheel(delta.get() as f32 / 120.0),
+            //         Event::Resize((size, scale)) => {
+            //             let (width, height) = size.as_physical(*scale);
+            //             config.ui_width = u16::try_from(width).unwrap_or(u16::MAX);
+            //             config.ui_height = u16::try_from(height).unwrap_or(u16::MAX);
+            //             io.set_display_size(imgui::Vec2(width as f32, height as f32));
+            //             self.renderer.resize_framebuffer(width, height, false);
+            //             context_menu = None;
+            //         },
+            //         Event::Focus(false) => {
+            //             io.clear_inputs();
+            //             context_menu = None;
+            //         },
+            //         Event::CloseRequest(_) => break 'gui,
+            //         _ => (),
+            //     }
+            // }
 
             // present imgui
             let fps_text = format!("FPS: {}", io.framerate().round());
