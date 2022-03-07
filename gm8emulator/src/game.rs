@@ -11,15 +11,15 @@ pub mod particle;
 pub mod pathfinding;
 pub mod platform;
 // pub mod recording;
-pub mod replay;
-pub mod savestate;
+// pub mod replay;
+// pub mod savestate;
 pub mod surface;
 pub mod transition;
 pub mod view;
 
 pub use background::Background;
-pub use replay::Replay;
-pub use savestate::SaveState;
+// pub use replay::Replay;
+// pub use savestate::SaveState;
 pub use view::View;
 
 use crate::{
@@ -168,7 +168,7 @@ pub struct Game {
     pub esc_close_game: bool,
 
     pub play_type: PlayType,
-    pub stored_events: VecDeque<replay::Event>,
+    // pub stored_events: VecDeque<replay::Event>,
     pub frame_limiter: bool, // whether to limit FPS of gameplay by room_speed
 
     pub audio: audio::AudioManager,
@@ -1274,7 +1274,7 @@ impl Game {
             close_requested: false,
             scaling,
             play_type,
-            stored_events: VecDeque::new(),
+            // stored_events: VecDeque::new(),
 
             // load_room sets this
             unscaled_width: 0,
@@ -2140,101 +2140,101 @@ impl Game {
     }
 
     // Replays some recorded inputs to the game
-    pub fn replay(mut self, replay: Replay, output_bin: Option<PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
-        let mut frame_count: usize = 0;
-        self.rand.set_seed(replay.start_seed);
-        self.spoofed_time_nanos = Some(replay.start_time);
+    // pub fn replay(mut self, replay: Replay, output_bin: Option<PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
+    //     let mut frame_count: usize = 0;
+    //     self.rand.set_seed(replay.start_seed);
+    //     self.spoofed_time_nanos = Some(replay.start_time);
 
-        // the tas ui creates some sprites, so as a hotfix we need to generate them here too
-        // TODO don't
-        for _ in 0..2 {
-            self.renderer.upload_sprite(Box::new([0, 0, 0, 0]), 1, 1, 0, 0).expect("Failed to upload blank sprite");
-        }
+    //     // the tas ui creates some sprites, so as a hotfix we need to generate them here too
+    //     // TODO don't
+    //     for _ in 0..2 {
+    //         self.renderer.upload_sprite(Box::new([0, 0, 0, 0]), 1, 1, 0, 0).expect("Failed to upload blank sprite");
+    //     }
 
-        for ev in replay.startup_events.iter() {
-            self.stored_events.push_back(ev.clone());
-        }
-        self.init()?;
-        handle_scene_change!(self);
+    //     for ev in replay.startup_events.iter() {
+    //         self.stored_events.push_back(ev.clone());
+    //     }
+    //     self.init()?;
+    //     handle_scene_change!(self);
 
-        let mut time_now = Instant::now();
-        loop {
-            // self.window.swap_events();
-            self.input.mouse_step();
-            if let Some(frame) = replay.get_frame(frame_count) {
-                if !self.stored_events.is_empty() {
-                    return Err(format!(
-                        "ERROR: {} stored events remaining at beginning of frame {}; aborting",
-                        self.stored_events.len(),
-                        frame_count,
-                    )
-                    .into())
-                }
+    //     let mut time_now = Instant::now();
+    //     loop {
+    //         // self.window.swap_events();
+    //         self.input.mouse_step();
+    //         if let Some(frame) = replay.get_frame(frame_count) {
+    //             if !self.stored_events.is_empty() {
+    //                 return Err(format!(
+    //                     "ERROR: {} stored events remaining at beginning of frame {}; aborting",
+    //                     self.stored_events.len(),
+    //                     frame_count,
+    //                 )
+    //                 .into())
+    //             }
 
-                for ev in frame.events.iter() {
-                    self.stored_events.push_back(ev.clone());
-                }
+    //             for ev in frame.events.iter() {
+    //                 self.stored_events.push_back(ev.clone());
+    //             }
 
-                if let Some(seed) = frame.new_seed {
-                    self.rand.set_seed(seed);
-                }
+    //             if let Some(seed) = frame.new_seed {
+    //                 self.rand.set_seed(seed);
+    //             }
 
-                if let Some(time) = frame.new_time {
-                    self.spoofed_time_nanos = Some(time);
-                }
+    //             if let Some(time) = frame.new_time {
+    //                 self.spoofed_time_nanos = Some(time);
+    //             }
 
-                self.input.mouse_move_to((frame.mouse_x as i32, frame.mouse_y as i32));
-                for ev in frame.inputs.iter() {
-                    match ev {
-                        replay::Input::KeyPress(v) => self.input.button_press(*v as u8, true),
-                        replay::Input::KeyRelease(v) => self.input.button_release(*v as u8, true),
-                        replay::Input::MousePress(b) => self.input.mouse_press(*b as i8, true),
-                        replay::Input::MouseRelease(b) => self.input.mouse_release(*b as i8, true),
-                        replay::Input::MouseWheelUp => self.input.mouse_scroll_up(),
-                        replay::Input::MouseWheelDown => self.input.mouse_scroll_down(),
-                    }
-                }
-            } else if let Some(bin) = &output_bin {
-                let render_state = self.renderer.state();
-                match SaveState::from(&mut self, replay.clone(), render_state)
-                    .save_to_file(bin, &mut savestate::Buffer::new())
-                {
-                    Ok(()) => break Ok(()),
-                    Err(e) => break Err(format!("Error saving to {:?}: {:?}", output_bin, e).into()),
-                }
-            }
+    //             self.input.mouse_move_to((frame.mouse_x as i32, frame.mouse_y as i32));
+    //             for ev in frame.inputs.iter() {
+    //                 match ev {
+    //                     replay::Input::KeyPress(v) => self.input.button_press(*v as u8, true),
+    //                     replay::Input::KeyRelease(v) => self.input.button_release(*v as u8, true),
+    //                     replay::Input::MousePress(b) => self.input.mouse_press(*b as i8, true),
+    //                     replay::Input::MouseRelease(b) => self.input.mouse_release(*b as i8, true),
+    //                     replay::Input::MouseWheelUp => self.input.mouse_scroll_up(),
+    //                     replay::Input::MouseWheelDown => self.input.mouse_scroll_down(),
+    //                 }
+    //             }
+    //         } else if let Some(bin) = &output_bin {
+    //             let render_state = self.renderer.state();
+    //             match SaveState::from(&mut self, replay.clone(), render_state)
+    //                 .save_to_file(bin, &mut savestate::Buffer::new())
+    //             {
+    //                 Ok(()) => break Ok(()),
+    //                 Err(e) => break Err(format!("Error saving to {:?}: {:?}", output_bin, e).into()),
+    //             }
+    //         }
 
-            self.frame()?;
-            handle_scene_change!(self);
+    //         self.frame()?;
+    //         handle_scene_change!(self);
 
-            // exit if X pressed or game_end() invoked
-            if self.close_requested {
-                break Ok(self.run_game_end_events()?)
-            }
+    //         // exit if X pressed or game_end() invoked
+    //         if self.close_requested {
+    //             break Ok(self.run_game_end_events()?)
+    //         }
 
-            // frame limiter
-            let diff = Instant::now().duration_since(time_now);
-            let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
-            if let Some(t) = self.spoofed_time_nanos.as_mut() {
-                *t += duration.as_nanos();
-            }
+    //         // frame limiter
+    //         let diff = Instant::now().duration_since(time_now);
+    //         let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
+    //         if let Some(t) = self.spoofed_time_nanos.as_mut() {
+    //             *t += duration.as_nanos();
+    //         }
 
-            if self.frame_counter == self.room.speed {
-                self.fps = self.room.speed;
-                self.frame_counter = 0;
-            }
-            self.frame_counter += 1;
+    //         if self.frame_counter == self.room.speed {
+    //             self.fps = self.room.speed;
+    //             self.frame_counter = 0;
+    //         }
+    //         self.frame_counter += 1;
 
-            if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
-                gml::datetime::sleep(time);
-                time_now += duration;
-            } else {
-                time_now = Instant::now();
-            }
+    //         if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
+    //             gml::datetime::sleep(time);
+    //             time_now += duration;
+    //         } else {
+    //             time_now = Instant::now();
+    //         }
 
-            frame_count += 1;
-        }
-    }
+    //         frame_count += 1;
+    //     }
+    // }
 
     // Gets the mouse position in room coordinates
     pub fn get_mouse_in_room(&self) -> (i32, i32) {

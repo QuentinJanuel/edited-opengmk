@@ -5,7 +5,15 @@
 use crate::{
     action, asset,
     game::{
-        draw, external, gm_save::GMSave, model, particle, pathfinding, platform, replay, surface::Surface,
+        draw,
+        external,
+        gm_save::GMSave,
+        model,
+        particle,
+        pathfinding,
+        platform,
+        // replay,
+        surface::Surface,
         transition::UserTransition, view::View, Game, GetAsset, PlayType, SceneChange, Version,
     },
     gml::{
@@ -3791,15 +3799,15 @@ impl Game {
         match self.play_type {
             PlayType::Normal => self.rand.randomize(),
             PlayType::Record => {
-                self.rand.randomize();
-                self.stored_events.push_back(replay::Event::Randomize(self.rand.seed()));
+                // self.rand.randomize();
+                // self.stored_events.push_back(replay::Event::Randomize(self.rand.seed()));
             },
             PlayType::Replay => {
-                if let Some(replay::Event::Randomize(seed)) = self.stored_events.pop_front() {
-                    self.rand.set_seed(seed);
-                } else {
-                    return Err(gml::Error::ReplayError("randomize".into()))
-                }
+                // if let Some(replay::Event::Randomize(seed)) = self.stored_events.pop_front() {
+                //     self.rand.set_seed(seed);
+                // } else {
+                //     return Err(gml::Error::ReplayError("randomize".into()))
+                // }
             },
         }
         Ok(Default::default())

@@ -14,8 +14,9 @@ mod types;
 mod util;
 
 use game::{
-    savestate::{self, SaveState},
-    Game, PlayType, Replay,
+    // savestate::{self, SaveState},
+    Game, PlayType,
+    // Replay,
 };
 use std::{
     env, fs,
@@ -123,32 +124,32 @@ fn xmain() -> i32 {
             })
     });
     let can_clear_temp_dir = temp_dir.is_none();
-    let replay = match matches
-        .opt_str("f")
-        .map(|filename| {
-            let filepath = PathBuf::from(&filename);
-            match filepath.extension().and_then(|x| x.to_str()) {
-                Some("bin") => match SaveState::from_file(&filepath, &mut savestate::Buffer::new()) {
-                    Ok(state) => Ok(state.into_replay()),
-                    Err(e) => Err(format!("couldn't load {:?}: {:?}", filepath, e)),
-                },
+    // let replay = match matches
+    //     .opt_str("f")
+    //     .map(|filename| {
+    //         let filepath = PathBuf::from(&filename);
+    //         match filepath.extension().and_then(|x| x.to_str()) {
+    //             Some("bin") => match SaveState::from_file(&filepath, &mut savestate::Buffer::new()) {
+    //                 Ok(state) => Ok(state.into_replay()),
+    //                 Err(e) => Err(format!("couldn't load {:?}: {:?}", filepath, e)),
+    //             },
 
-                Some("gmtas") => match Replay::from_file(&filepath) {
-                    Ok(replay) => Ok(replay),
-                    Err(e) => Err(format!("couldn't load {:?}: {:?}", filepath, e)),
-                },
+    //             Some("gmtas") => match Replay::from_file(&filepath) {
+    //                 // Ok(replay) => Ok(replay),
+    //                 // Err(e) => Err(format!("couldn't load {:?}: {:?}", filepath, e)),
+    //             },
 
-                _ => Err("unknown filetype for -f, expected '.bin' or '.gmtas'".into()),
-            }
-        })
-        .transpose()
-    {
-        Ok(r) => r,
-        Err(e) => {
-            eprintln!("{}", e);
-            return EXIT_FAILURE
-        },
-    };
+    //             _ => Err("unknown filetype for -f, expected '.bin' or '.gmtas'".into()),
+    //         }
+    //     })
+    //     .transpose()
+    // {
+    //     Ok(r) => r,
+    //     Err(e) => {
+    //         eprintln!("{}", e);
+    //         return EXIT_FAILURE
+    //     },
+    // };
 
     let input = {
         if matches.free.len() == 1 {
@@ -209,13 +210,14 @@ fn xmain() -> i32 {
 
     let encoding = encoding_rs::SHIFT_JIS; // TODO: argument
 
-    let play_type = if project_path.is_some() {
-        PlayType::Record
-    } else if replay.is_some() {
-        PlayType::Replay
-    } else {
-        PlayType::Normal
-    };
+    // let play_type = if project_path.is_some() {
+    //     PlayType::Record
+    // } else if replay.is_some() {
+    //     PlayType::Replay
+    // } else {
+    //     PlayType::Normal
+    // };
+    let play_type = PlayType::Normal;
 
     let mut components =
         match Game::launch(assets, absolute_path, game_args, temp_dir, encoding, frame_limiter, play_type) {
@@ -245,9 +247,10 @@ fn xmain() -> i32 {
             .filter(|i| i.remove_at_end)
             .map(|i| PathBuf::from(components.decode_str(i.name.as_ref()).into_owned()))
             .collect::<Vec<_>>();
-        let result = if let Some(replay) = replay {
-            components.replay(replay, output_bin)
-        } else {
+        let result = {
+        // let result = if let Some(replay) = replay {
+            // components.replay(replay, output_bin)
+        // } else {
             components.spoofed_time_nanos = if spoof_time { Some(time_now) } else { None };
             components.run()
         };
