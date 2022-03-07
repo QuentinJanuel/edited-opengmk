@@ -8,7 +8,7 @@ members = [
     "gm8exe",
 
     # bindings
-    "gm8emulator/ffi/cimgui-sys",
+    # "gm8emulator/ffi/cimgui-sys",
 ]
 
 [profile.release]

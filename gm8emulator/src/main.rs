@@ -3,7 +3,7 @@ mod asset;
 mod game;
 mod gml;
 mod handleman;
-mod imgui;
+// mod imgui;
 mod input;
 mod instance;
 mod instancelist;
@@ -230,7 +230,7 @@ fn xmain() -> i32 {
 
     if let Err(err) = if let Some(path) = project_path {
         components.spoofed_time_nanos = Some(time_now);
-        components.record(path);
+        // components.record(path);
         Ok(())
     } else {
         // cache temp_dir and included files because the other functions take ownership
