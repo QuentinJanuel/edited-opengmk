@@ -1,21 +1,21 @@
 pub mod dll;
 mod dummy;
 pub mod win32;
-mod wow64;
+// mod wow64;
 
 use crate::{gml, gml::Function, types::ID};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
-#[cfg(not(all(target_os = "windows", target_arch = "x86")))]
+// #[cfg(not(all(target_os = "windows", target_arch = "x86")))]
 use dummy as native;
-#[cfg(all(target_os = "windows", target_arch = "x86"))]
-use win32 as native;
+// #[cfg(all(target_os = "windows", target_arch = "x86"))]
+// use win32 as native;
 
-#[cfg(all(target_os = "windows", target_arch = "x86"))]
+// #[cfg(all(target_os = "windows", target_arch = "x86"))]
 use dummy as ipc;
-#[cfg(not(all(target_os = "windows", target_arch = "x86")))]
-use wow64 as ipc;
+// #[cfg(not(all(target_os = "windows", target_arch = "x86")))]
+// use wow64 as ipc;
 
 pub use native::NativeExternal;
 
