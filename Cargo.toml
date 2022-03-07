@@ -1,5 +1,5 @@
 [workspace]
-exclude = ["gm8emulator-wow64"]
+# exclude = ["gm8emulator-wow64"]
 members = [
     # main projects
     "gm8emulator",
