@@ -2,7 +2,7 @@ use crate::types::ArraySerde;
 use rmp3::{Decoder, Frame, RawDecoder};
 use serde::{Deserialize, Serialize};
 use std::{alloc, sync::Arc};
-use udon::source::{ChannelCount, Sample, SampleRate, Source};
+// use udon::source::{ChannelCount, Sample, SampleRate, Source};
 
 /// This MP3 player is deliberately designed to emulate bugs in GameMaker 8. Specifically:
 /// - the sample rate from the first frame is assumed to be the sample rate of the whole file
@@ -10,8 +10,8 @@ use udon::source::{ChannelCount, Sample, SampleRate, Source};
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Mp3Player {
     file: Arc<[u8]>,
-    channels: ChannelCount,
-    sample_rate: SampleRate,
+    // channels: ChannelCount,
+    // sample_rate: SampleRate,
     length: usize, // Pre-calculated number of samples that will actually be output by GM8
     #[serde(skip, default = "RawDecoderWrap::new")]
     decoder: RawDecoderWrap,
@@ -66,8 +66,8 @@ impl Mp3Player {
 
             Ok(Self {
                 file: file.into(),
-                channels: ChannelCount::new(channels).ok_or(Error::InvalidDetails)?,
-                sample_rate: SampleRate::new(sample_rate).ok_or(Error::InvalidDetails)?,
+                // channels: ChannelCount::new(channels).ok_or(Error::InvalidDetails)?,
+                // sample_rate: SampleRate::new(sample_rate).ok_or(Error::InvalidDetails)?,
                 decoder: RawDecoderWrap(RawDecoder::new()),
                 length,
                 offset: 0,
@@ -86,88 +86,90 @@ impl Mp3Player {
         self.length
     }
 
-    fn flush(&mut self, output: &mut [Sample]) -> usize {
-        // get the biggest slice that can be copied directly into `output`
-        let mut buffer = &self.buffer[self.buffer_off..self.buffer_off + self.buffer_len];
-        if buffer.len() > output.len() {
-            buffer = &buffer[..output.len()];
-        }
+    fn flush(&mut self/*, output: &mut [Sample] */) -> usize {
+        // // get the biggest slice that can be copied directly into `output`
+        // let mut buffer = &self.buffer[self.buffer_off..self.buffer_off + self.buffer_len];
+        // if buffer.len() > output.len() {
+        //     buffer = &buffer[..output.len()];
+        // }
 
-        // copy samples into `output`
-        (&mut output[..buffer.len()]).copy_from_slice(buffer);
+        // // copy samples into `output`
+        // (&mut output[..buffer.len()]).copy_from_slice(buffer);
 
-        // adjust internal state
-        self.buffer_len -= buffer.len();
-        if self.buffer_len > 0 {
-            self.buffer_off += buffer.len();
-        } else {
-            self.buffer_off = 0;
-        }
+        // // adjust internal state
+        // self.buffer_len -= buffer.len();
+        // if self.buffer_len > 0 {
+        //     self.buffer_off += buffer.len();
+        // } else {
+        //     self.buffer_off = 0;
+        // }
 
-        // return samples written
-        buffer.len()
+        // // return samples written
+        // buffer.len()
+        0
     }
 
     fn refill(&mut self) -> bool {
-        loop {
-            match self.decoder.0.next(&self.file[self.offset..], &mut self.buffer) {
-                Some((rmp3::Frame::Audio(audio), bytes_consumed)) => {
-                    self.offset += bytes_consumed;
-                    if self.channels.get() == audio.channels() {
-                        self.buffer_off = 0;
-                        self.buffer_len = usize::from(audio.channels()) * audio.sample_count();
-                        break true
-                    }
-                },
-                Some((rmp3::Frame::Other(_), bytes_consumed)) => self.offset += bytes_consumed,
-                None => {
-                    self.buffer_off = 0;
-                    self.buffer_len = 0;
-                    break false
-                },
-            }
-        }
+        // loop {
+        //     match self.decoder.0.next(&self.file[self.offset..], &mut self.buffer) {
+        //         Some((rmp3::Frame::Audio(audio), bytes_consumed)) => {
+        //             self.offset += bytes_consumed;
+        //             if self.channels.get() == audio.channels() {
+        //                 self.buffer_off = 0;
+        //                 self.buffer_len = usize::from(audio.channels()) * audio.sample_count();
+        //                 break true
+        //             }
+        //         },
+        //         Some((rmp3::Frame::Other(_), bytes_consumed)) => self.offset += bytes_consumed,
+        //         None => {
+        //             self.buffer_off = 0;
+        //             self.buffer_len = 0;
+        //             break false
+        //         },
+        //     }
+        // }
+        true
     }
 }
 
-impl Source for Mp3Player {
-    #[inline(always)]
-    fn channel_count(&self) -> ChannelCount {
-        self.channels
-    }
+// impl Source for Mp3Player {
+//     #[inline(always)]
+//     fn channel_count(&self) -> ChannelCount {
+//         self.channels
+//     }
 
-    #[inline(always)]
-    fn sample_rate(&self) -> SampleRate {
-        self.sample_rate
-    }
+//     #[inline(always)]
+//     fn sample_rate(&self) -> SampleRate {
+//         self.sample_rate
+//     }
 
-    fn write_samples(&mut self, mut buffer: &mut [Sample]) -> usize {
-        let mut samples_written = 0usize;
-        loop {
-            // 😳
-            let flushed = self.flush(buffer);
-            if buffer.len() == flushed {
-                break samples_written + flushed
-            }
-            buffer = &mut buffer[flushed..];
-            samples_written += flushed;
+//     fn write_samples(&mut self, mut buffer: &mut [Sample]) -> usize {
+//         let mut samples_written = 0usize;
+//         loop {
+//             // 😳
+//             let flushed = self.flush(buffer);
+//             if buffer.len() == flushed {
+//                 break samples_written + flushed
+//             }
+//             buffer = &mut buffer[flushed..];
+//             samples_written += flushed;
 
-            // 🥤
-            if self.buffer_len == 0 {
-                if !self.refill() {
-                    break samples_written
-                }
-            }
-        }
-    }
+//             // 🥤
+//             if self.buffer_len == 0 {
+//                 if !self.refill() {
+//                     break samples_written
+//                 }
+//             }
+//         }
+//     }
 
-    #[inline(always)]
-    fn reset(&mut self) {
-        self.buffer_off = 0;
-        self.buffer_len = 0;
-        self.offset = 0;
-    }
-}
+//     #[inline(always)]
+//     fn reset(&mut self) {
+//         self.buffer_off = 0;
+//         self.buffer_len = 0;
+//         self.offset = 0;
+//     }
+// }
 
 fn details(mut decoder: Decoder) -> Option<(u16, u32)> {
     while let Some(frame) = decoder.peek() {

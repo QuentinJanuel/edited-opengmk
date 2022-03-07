@@ -719,10 +719,10 @@ impl Game {
                             b".mp3" => match audio.add_mp3(data, sound_id as i32) {
                                 Some(x) => FileType::Mp3(x),
                                 None => {
-                                    println!(
-                                        "WARNING: invalid mp3 data in sound '{}'",
-                                        String::from_utf8_lossy(b.name.0.as_ref())
-                                    );
+                                    // println!(
+                                    //     "WARNING: invalid mp3 data in sound '{}'",
+                                    //     String::from_utf8_lossy(b.name.0.as_ref())
+                                    // );
                                     FileType::None
                                 },
                             },
@@ -735,10 +735,10 @@ impl Game {
                             ) {
                                 Some(x) => FileType::Wav(x),
                                 None => {
-                                    println!(
-                                        "WARNING: invalid wav data in sound '{}'",
-                                        String::from_utf8_lossy(b.name.0.as_ref())
-                                    );
+                                    // println!(
+                                    //     "WARNING: invalid wav data in sound '{}'",
+                                    //     String::from_utf8_lossy(b.name.0.as_ref())
+                                    // );
                                     FileType::None
                                 },
                             },
