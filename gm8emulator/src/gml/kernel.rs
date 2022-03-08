@@ -6296,14 +6296,15 @@ impl Game {
 
     pub fn export_include_file(&mut self, args: &[Value]) -> gml::Result<Value> {
         let name = expect_args!(args, [bytes])?;
-        let temp_directory = self.decode_str(self.temp_directory.as_ref()).into_owned().into();
-        let program_directory = self.decode_str(self.program_directory.as_ref()).into_owned().into();
+        // let temp_directory = self.decode_str(self.temp_directory.as_ref()).into_owned().into();
+        // let program_directory = self.decode_str(self.program_directory.as_ref()).into_owned().into();
         if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
         {
-            match file.export(temp_directory, program_directory) {
-                Ok(()) => Ok(Default::default()),
-                Err(e) => Err(gml::Error::FunctionError("export_include_file".into(), e.to_string())),
-            }
+            Ok(Default::default())
+            // match file.export(temp_directory, program_directory) {
+            //     Ok(()) => Ok(Default::default()),
+            //     Err(e) => Err(gml::Error::FunctionError("export_include_file".into(), e.to_string())),
+            // }
         } else {
             Err(gml::Error::FunctionError("export_include_file".into(), "Trying to export non-existing file.".into()))
         }

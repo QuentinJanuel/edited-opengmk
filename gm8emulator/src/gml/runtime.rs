@@ -1005,8 +1005,8 @@ impl Game {
                     .map(|x| x.into_owned().into())
                     .ok_or(gml::Error::BadDirectoryError(cwd.to_string()))
             },
-            InstanceVariable::TempDirectory => Ok(self.temp_directory.clone().into()),
-            InstanceVariable::ProgramDirectory => Ok(self.program_directory.clone().into()),
+            InstanceVariable::TempDirectory => Ok("".into()),
+            InstanceVariable::ProgramDirectory => Ok("".clone().into()),
             InstanceVariable::InstanceCount => Ok(self.room.instance_list.count_all().into()),
             InstanceVariable::InstanceId => Ok(self.room.instance_list.instance_at(array_index as _).into()),
             InstanceVariable::RoomWidth => Ok(self.room.width.into()),

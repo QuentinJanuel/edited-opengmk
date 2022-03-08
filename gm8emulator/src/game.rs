@@ -154,8 +154,8 @@ pub struct Game {
     pub error_last: gml::String,
 
     pub game_id: i32,
-    pub program_directory: gml::String,
-    pub temp_directory: gml::String,
+    // pub program_directory: gml::String,
+    // pub temp_directory: gml::String,
     pub included_files: Vec<IncludedFile>,
     pub gm_version: Version,
     pub open_ini: Option<(ini::Ini, gml::String)>, // keep the filename for writing
@@ -280,30 +280,30 @@ macro_rules! handle_scene_change {
 impl Game {
     pub fn launch(
         assets: gm8exe::GameAssets,
-        file_path: PathBuf,
+        // file_path: PathBuf,
         game_arguments: Vec<String>,
-        temp_dir: Option<PathBuf>,
+        // temp_dir: Option<PathBuf>,
         encoding: &'static Encoding,
         frame_limiter: bool,
         play_type: PlayType,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
-        let mut file_path2 = file_path.clone();
-        file_path2.pop();
+        // let mut file_path2 = file_path.clone();
+        // file_path2.pop();
         // Game Maker doesn't change working directory on load but doing it anyway makes life easier
-        std::env::set_current_dir(&file_path2)?;
-        let mut param_string: &str = &file_path.to_string_lossy();
-        let mut program_directory: &str = &file_path2.to_string_lossy();
+        // std::env::set_current_dir(&file_path2)?;
+        // let mut param_string: &str = &file_path.to_string_lossy();
+        // let mut program_directory: &str = &file_path2.to_string_lossy();
 
-        if cfg!(target_os = "windows") {
-            param_string = param_string.trim_start_matches("\\\\?\\");
-            program_directory = program_directory.trim_start_matches("\\\\?\\");
-        }
+        // if cfg!(target_os = "windows") {
+        //     param_string = param_string.trim_start_matches("\\\\?\\");
+        //     program_directory = program_directory.trim_start_matches("\\\\?\\");
+        // }
         // TODO: store these as gml::String probably?
-        eprintln!(
-            "launching game\n  > param_string: \"{}\"\n  > program_directory: \"{}\"",
-            param_string, program_directory
-        );
+        // eprintln!(
+        //     "launching game\n  > param_string: \"{}\"\n  > program_directory: \"{}\"",
+        //     param_string, program_directory
+        // );
 
         // Improve framepacing on Windows
         #[cfg(target_os = "windows")]
@@ -374,49 +374,49 @@ impl Game {
             Version::GameMaker8_1 => String::from_utf8(bytes).ok(),
         };
 
-        let mut temp_directory = match temp_dir {
-            Some(path) => path,
-            None => {
-                // read path from tempdir.txt or if that's not possible get std::env::temp_dir()
-                let mut dir = if let Some(path) =
-                    std::fs::read("tempdir.txt").ok().and_then(decode_str_maybe).map(|path| PathBuf::from(path))
-                {
-                    path
-                } else {
-                    std::env::temp_dir()
-                };
-                // closure to make a gm_ttt folder within a given path
-                let mut make_temp_dir = |path: &mut PathBuf| {
-                    let mut folder = "gm_ttt_".to_string();
-                    folder += &rand.next_int(99999).to_string();
-                    path.push(&folder);
-                    while path.exists() {
-                        path.pop();
-                        folder.truncate(7); // length of "gm_ttt_"
-                        folder += &rand.next_int(99999).to_string();
-                        path.push(&folder);
-                    }
-                    std::fs::create_dir_all(path)
-                };
-                // try making folders
-                if let Err(e) = make_temp_dir(&mut dir) {
-                    eprintln!("Could not create temp folder in {:?}: {}", dir, e);
-                    // GM8 would try C:\temp but let's skip that
-                    match std::env::current_dir().map(|x| {
-                        dir = x;
-                        make_temp_dir(&mut dir)
-                    }) {
-                        Ok(_) => eprintln!("Using game directory instead."),
-                        Err(e) => {
-                            eprintln!("Could not use game directory either: {}", e);
-                            eprintln!("Trying to run anyway. If this game uses the temp folder, it will likely crash.");
-                            dir = PathBuf::new();
-                        },
-                    }
-                }
-                dir
-            },
-        };
+        // let mut temp_directory = match temp_dir {
+        //     Some(path) => path,
+        //     None => {
+        //         // read path from tempdir.txt or if that's not possible get std::env::temp_dir()
+        //         let mut dir = if let Some(path) =
+        //             std::fs::read("tempdir.txt").ok().and_then(decode_str_maybe).map(|path| PathBuf::from(path))
+        //         {
+        //             path
+        //         } else {
+        //             std::env::temp_dir()
+        //         };
+        //         // closure to make a gm_ttt folder within a given path
+        //         let mut make_temp_dir = |path: &mut PathBuf| {
+        //             let mut folder = "gm_ttt_".to_string();
+        //             folder += &rand.next_int(99999).to_string();
+        //             path.push(&folder);
+        //             while path.exists() {
+        //                 path.pop();
+        //                 folder.truncate(7); // length of "gm_ttt_"
+        //                 folder += &rand.next_int(99999).to_string();
+        //                 path.push(&folder);
+        //             }
+        //             std::fs::create_dir_all(path)
+        //         };
+        //         // try making folders
+        //         if let Err(e) = make_temp_dir(&mut dir) {
+        //             eprintln!("Could not create temp folder in {:?}: {}", dir, e);
+        //             // GM8 would try C:\temp but let's skip that
+        //             match std::env::current_dir().map(|x| {
+        //                 dir = x;
+        //                 make_temp_dir(&mut dir)
+        //             }) {
+        //                 Ok(_) => eprintln!("Using game directory instead."),
+        //                 Err(e) => {
+        //                     eprintln!("Could not use game directory either: {}", e);
+        //                     eprintln!("Trying to run anyway. If this game uses the temp folder, it will likely crash.");
+        //                     dir = PathBuf::new();
+        //                 },
+        //             }
+        //         }
+        //         dir
+        //     },
+        // };
 
         let included_files = included_files
             .into_iter()
@@ -446,7 +446,10 @@ impl Game {
                     free_after_export: i.free_memory,
                     remove_at_end: i.remove_at_end,
                 };
-                i.export(temp_directory.clone(), program_directory.to_string().into())?;
+                // i.export(
+                //     temp_directory.clone(),
+                //     program_directory.to_string().into(),
+                // )?;
                 Ok(i)
             })
             .collect::<Result<Vec<_>, std::io::Error>>()
@@ -592,120 +595,120 @@ impl Game {
         let mut extension_functions = Vec::with_capacity(
             extensions.iter().map(|x| x.files.iter().map(|f| f.functions.len()).sum::<usize>()).sum::<usize>(),
         );
-        for extension in extensions.iter() {
-            temp_directory.push(&*String::from_utf8_lossy(extension.folder_name.0.as_ref()));
-            std::fs::create_dir_all(&temp_directory)?;
+        // for extension in extensions.iter() {
+        //     // temp_directory.push(&*String::from_utf8_lossy(extension.folder_name.0.as_ref()));
+        //     std::fs::create_dir_all(&temp_directory)?;
 
-            for file in extension.files.iter() {
-                match file.kind {
-                    FileKind::DynamicLibrary => {
-                        // DLL - save this to disk then define all the externals in it
-                        let dll_name = gml::String::from(file.name.0.clone().as_ref());
-                        temp_directory.push(&*String::from_utf8_lossy(dll_name.as_ref()));
+        //     for file in extension.files.iter() {
+        //         match file.kind {
+        //             FileKind::DynamicLibrary => {
+        //                 // DLL - save this to disk then define all the externals in it
+        //                 let dll_name = gml::String::from(file.name.0.clone().as_ref());
+        //                 temp_directory.push(&*String::from_utf8_lossy(dll_name.as_ref()));
 
-                        File::create(&temp_directory)?.write_all(&file.contents)?;
-                        for function in file.functions.iter() {
-                            let dll = &*temp_directory.to_string_lossy();
-                            let symbol = gml::String::from(if function.external_name.0.len() == 0 {
-                                &*function.name.0
-                            } else {
-                                &*function.external_name.0
-                            });
-                            let sym = &*symbol.decode(match gm_version {
-                                Version::GameMaker8_0 => encoding,
-                                Version::GameMaker8_1 => encoding_rs::UTF_8,
-                            });
-                            match externals.define(external::dll::ExternalSignature {
-                                dll: dll.to_string(),
-                                symbol: sym.to_string(),
-                                call_conv: match function.convention {
-                                    CallingConvention::Cdecl => external::dll::CallConv::Cdecl,
-                                    _ => external::dll::CallConv::Stdcall,
-                                },
-                                type_args: function
-                                    .arg_types
-                                    .iter()
-                                    .take(function.arg_count as usize)
-                                    .map(|x| match x {
-                                        FunctionValueKind::GMReal => external::dll::ValueType::Real,
-                                        FunctionValueKind::GMString => external::dll::ValueType::Str,
-                                    })
-                                    .collect::<Vec<_>>(),
-                                type_return: match function.return_type {
-                                    FunctionValueKind::GMReal => external::dll::ValueType::Real,
-                                    FunctionValueKind::GMString => external::dll::ValueType::Str,
-                                },
-                            }) {
-                                Ok(id) => extension_functions.push(Some(ExtensionFunction::Dll(sym.into(), id))),
-                                Err(e) => {
-                                    println!(
-                                        "WARNING: failed to load extension function {} (from {}): {}",
-                                        function.name, dll_name, e
-                                    );
-                                    extension_functions.push(None);
-                                },
-                            }
-                        }
-                        temp_directory.pop();
-                    },
-                    FileKind::GmlScript => {
-                        // GML - compile, then set up all the functions defined in it
-                        // Note: GameMaker does a lazy search for #define to look for function definitions,
-                        // not caring if the #define is in the middle of a string or comment, so we do the same here
-                        for function in file.functions.iter() {
-                            let define_string = "#define ".as_bytes();
-                            let function_name = if function.external_name.0.len() == 0 {
-                                function.name.0.as_ref()
-                            } else {
-                                function.external_name.0.as_ref()
-                            };
+        //                 File::create(&temp_directory)?.write_all(&file.contents)?;
+        //                 for function in file.functions.iter() {
+        //                     let dll = &*temp_directory.to_string_lossy();
+        //                     let symbol = gml::String::from(if function.external_name.0.len() == 0 {
+        //                         &*function.name.0
+        //                     } else {
+        //                         &*function.external_name.0
+        //                     });
+        //                     let sym = &*symbol.decode(match gm_version {
+        //                         Version::GameMaker8_0 => encoding,
+        //                         Version::GameMaker8_1 => encoding_rs::UTF_8,
+        //                     });
+        //                     match externals.define(external::dll::ExternalSignature {
+        //                         dll: dll.to_string(),
+        //                         symbol: sym.to_string(),
+        //                         call_conv: match function.convention {
+        //                             CallingConvention::Cdecl => external::dll::CallConv::Cdecl,
+        //                             _ => external::dll::CallConv::Stdcall,
+        //                         },
+        //                         type_args: function
+        //                             .arg_types
+        //                             .iter()
+        //                             .take(function.arg_count as usize)
+        //                             .map(|x| match x {
+        //                                 FunctionValueKind::GMReal => external::dll::ValueType::Real,
+        //                                 FunctionValueKind::GMString => external::dll::ValueType::Str,
+        //                             })
+        //                             .collect::<Vec<_>>(),
+        //                         type_return: match function.return_type {
+        //                             FunctionValueKind::GMReal => external::dll::ValueType::Real,
+        //                             FunctionValueKind::GMString => external::dll::ValueType::Str,
+        //                         },
+        //                     }) {
+        //                         Ok(id) => extension_functions.push(Some(ExtensionFunction::Dll(sym.into(), id))),
+        //                         Err(e) => {
+        //                             println!(
+        //                                 "WARNING: failed to load extension function {} (from {}): {}",
+        //                                 function.name, dll_name, e
+        //                             );
+        //                             extension_functions.push(None);
+        //                         },
+        //                     }
+        //                 }
+        //                 temp_directory.pop();
+        //             },
+        //             FileKind::GmlScript => {
+        //                 // GML - compile, then set up all the functions defined in it
+        //                 // Note: GameMaker does a lazy search for #define to look for function definitions,
+        //                 // not caring if the #define is in the middle of a string or comment, so we do the same here
+        //                 for function in file.functions.iter() {
+        //                     let define_string = "#define ".as_bytes();
+        //                     let function_name = if function.external_name.0.len() == 0 {
+        //                         function.name.0.as_ref()
+        //                     } else {
+        //                         function.external_name.0.as_ref()
+        //                     };
 
-                            let len = define_string.len() + function_name.len() + 1;
-                            match file
-                                .contents
-                                .as_ref()
-                                .windows(len)
-                                .position(|x| {
-                                    &x[..define_string.len()] == define_string
-                                        && &x[define_string.len()..(len - 1)] == function_name
-                                        && (x[len - 1] == 10 || x[len - 1] == 13)
-                                })
-                                .map(|x| x + len)
-                            {
-                                Some(start) => {
-                                    let fn_code = if let Some(len) = file.contents[start..]
-                                        .windows(define_string.len())
-                                        .position(|x| x == define_string)
-                                    {
-                                        &file.contents[start..(start + len)]
-                                    } else {
-                                        &file.contents[start..]
-                                    };
-                                    extension_functions.push(Some(ExtensionFunction::Gml(compiler.compile(fn_code)?)));
-                                },
-                                None => {
-                                    println!(
-                                        "WARNING: failed to load extension function {} (from {})",
-                                        function.name, file.name
-                                    );
-                                    extension_functions.push(None);
-                                },
-                            }
-                        }
-                    },
-                    FileKind::ActionLibrary => (), // Lib - don't think we need to do anything with this
-                    FileKind::Other => {
-                        // Other - just save this to disk
-                        temp_directory.push(&*String::from_utf8_lossy(file.name.0.as_ref()));
-                        let mut f = File::create(&temp_directory)?;
-                        f.write_all(&file.contents)?;
-                        temp_directory.pop();
-                    },
-                }
-            }
+        //                     let len = define_string.len() + function_name.len() + 1;
+        //                     match file
+        //                         .contents
+        //                         .as_ref()
+        //                         .windows(len)
+        //                         .position(|x| {
+        //                             &x[..define_string.len()] == define_string
+        //                                 && &x[define_string.len()..(len - 1)] == function_name
+        //                                 && (x[len - 1] == 10 || x[len - 1] == 13)
+        //                         })
+        //                         .map(|x| x + len)
+        //                     {
+        //                         Some(start) => {
+        //                             let fn_code = if let Some(len) = file.contents[start..]
+        //                                 .windows(define_string.len())
+        //                                 .position(|x| x == define_string)
+        //                             {
+        //                                 &file.contents[start..(start + len)]
+        //                             } else {
+        //                                 &file.contents[start..]
+        //                             };
+        //                             extension_functions.push(Some(ExtensionFunction::Gml(compiler.compile(fn_code)?)));
+        //                         },
+        //                         None => {
+        //                             println!(
+        //                                 "WARNING: failed to load extension function {} (from {})",
+        //                                 function.name, file.name
+        //                             );
+        //                             extension_functions.push(None);
+        //                         },
+        //                     }
+        //                 }
+        //             },
+        //             FileKind::ActionLibrary => (), // Lib - don't think we need to do anything with this
+        //             FileKind::Other => {
+        //                 // Other - just save this to disk
+        //                 temp_directory.push(&*String::from_utf8_lossy(file.name.0.as_ref()));
+        //                 let mut f = File::create(&temp_directory)?;
+        //                 f.write_all(&file.contents)?;
+        //                 temp_directory.pop();
+        //             },
+        //         }
+        //     }
 
-            temp_directory.pop();
-        }
+        //     temp_directory.pop();
+        // }
 
         let sounds = sounds
             .into_iter()
@@ -1247,8 +1250,8 @@ impl Game {
             health: Real::from(100.0),
             health_capt: "Health: ".to_string().into(),
             game_id: game_id as i32,
-            program_directory: program_directory.into(),
-            temp_directory: "".into(),
+            // program_directory: program_directory.into(),
+            // temp_directory: "".into(),
             included_files,
             gm_version,
             open_ini: None,
@@ -1290,7 +1293,7 @@ impl Game {
             window_visible: true,
         };
 
-        game.temp_directory = game.encode_str_maybe(temp_directory.to_str().unwrap()).unwrap().into_owned().into();
+        // game.temp_directory = game.encode_str_maybe(temp_directory.to_str().unwrap()).unwrap().into_owned().into();
 
         // Evaluate constants
         for extension in extensions {
