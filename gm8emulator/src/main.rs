@@ -205,7 +205,7 @@ fn xmain() -> i32 {
     let compressed = {
         let mut e = flate2::write::ZlibEncoder::new(
             Vec::new(),
-            flate2::Compression::default(),
+            flate2::Compression::best(),
         );
         e.write_all(&bin_assets[..]).expect("failed to compress assets");
         e.finish().expect("Failed to compress")
