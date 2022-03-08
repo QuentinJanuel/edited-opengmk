@@ -258,6 +258,7 @@ dependencies = [
  "byteorder",
  "crc32fast",
  "encoding_rs",
+ "flate2",
  "getopts",
  "getrandom",
  "gl_generator",
@@ -283,9 +284,11 @@ dependencies = [
 name = "gm8exe"
 version = "0.2.0"
 dependencies = [
+ "bincode",
  "byteorder",
  "flate2",
  "rayon",
+ "serde",
 ]
 
 [[package]]

@@ -10,6 +10,8 @@ use std::{
 
 pub const VERSION: u32 = 800;
 
+use serde::{Serialize, Deserialize};
+#[derive(Serialize, Deserialize)]
 pub struct Trigger {
     /// The asset name present in the editor.
     ///
@@ -27,7 +29,7 @@ pub struct Trigger {
     pub constant_name: PascalString,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TriggerKind {
     Step = 0,
     BeginStep = 1,

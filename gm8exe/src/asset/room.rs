@@ -5,10 +5,12 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 541;
 
+#[derive(Serialize, Deserialize)]
 pub struct Room {
     /// The asset name present in GML and the editor.
     pub name: PascalString,
@@ -52,6 +54,7 @@ pub struct Room {
     pub tiles: Vec<Tile>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Background {
     pub visible_on_start: bool,
 
@@ -69,6 +72,7 @@ pub struct Background {
     pub stretch: bool,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Instance {
     pub x: i32,
     pub y: i32,
@@ -81,6 +85,7 @@ pub struct Instance {
     pub angle: f64,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Tile {
     pub x: i32,
     pub y: i32,
@@ -96,6 +101,7 @@ pub struct Tile {
     pub blend: u32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct View {
     pub visible: bool,
     pub source_x: i32,
@@ -109,6 +115,7 @@ pub struct View {
     pub following: ViewFollowData,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct ViewFollowData {
     pub hborder: i32,
     pub vborder: i32,

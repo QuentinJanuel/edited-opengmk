@@ -1,5 +1,7 @@
 use crate::asset::PascalString;
 
+use serde::{Serialize, Deserialize};
+#[derive(Serialize, Deserialize)]
 pub struct Constant {
     /// The asset name present in GML and the editor.
     pub name: PascalString,

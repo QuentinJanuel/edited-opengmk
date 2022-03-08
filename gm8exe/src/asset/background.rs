@@ -3,11 +3,13 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION1: u32 = 710;
 pub const VERSION2: u32 = 800;
 
+#[derive(Serialize, Deserialize)]
 pub struct Background {
     /// The asset name present in GML and the editor.
     pub name: PascalString,

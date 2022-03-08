@@ -21,7 +21,7 @@ use game::{
 use std::{
     env, fs,
     path::{Path, PathBuf},
-    process,
+    process, io::Write,
 };
 
 const EXIT_SUCCESS: i32 = 0;
@@ -199,6 +199,50 @@ fn xmain() -> i32 {
             return EXIT_FAILURE
         },
     };
+    println!("Serializing assets...");
+    let bin_assets = bincode::serialize(&assets).expect("failed to serialize assets");
+    println!("Compressing assets...");
+    let compressed = {
+        let mut e = flate2::write::ZlibEncoder::new(
+            Vec::new(),
+            flate2::Compression::default(),
+        );
+        e.write_all(&bin_assets[..]).expect("failed to compress assets");
+        e.finish().expect("Failed to compress")
+    };
+    println!("Length of asst: {}", bin_assets.len());
+    println!("Length of comp: {}", compressed.len());
+    println!("Writing assets...");
+    {
+        use std::fs::File;
+        let mut file = File::create("assets.map")
+            .expect("Failed to create file");
+        // Write a slice of bytes to the file
+        file.write_all(
+            &compressed[..],
+        ).expect("Failed to write bytes");
+    }
+    println!("Loading assets...");
+    let compressed = {
+        use std::io::prelude::*;
+        let mut file = std::fs::File::open("assets.map")
+            .expect("Failed to open file");
+        let mut buffer = Vec::<u8>::new();
+        file.read_to_end(&mut buffer)
+            .expect("Failed to read file");
+        buffer
+    };
+    println!("Decompressing assets...");
+    let uncompressed = {
+        use std::io::prelude::*;
+        let mut d = flate2::read::ZlibDecoder::new(&compressed[..]);
+        let mut uncompressed = Vec::<u8>::new();
+        d.read_to_end(&mut uncompressed).expect("Failed to decompress");
+        uncompressed
+    };
+    println!("Deserializing assets...");
+    let assets = bincode::deserialize(&uncompressed[..])
+        .expect("failed to deserialize assets");
 
     let absolute_path = match file_path.canonicalize() {
         Ok(p) => p,

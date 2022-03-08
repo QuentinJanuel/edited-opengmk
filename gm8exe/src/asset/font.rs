@@ -3,10 +3,14 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{
+    Serialize, Deserialize,
+};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 800;
 
+#[derive(Serialize, Deserialize)]
 pub struct Font {
     /// The asset name present in GML and the editor.
     pub name: PascalString,
@@ -44,7 +48,8 @@ pub struct Font {
     /// - height
     /// - cursor offset (ie. how far right of the cursor to draw)
     /// - cursor distance (ie. how far right to move the cursor after drawing.)
-    pub dmap: Box<[u32; 0x600]>,
+    pub dmap: Box<Vec<u32>>,
+    // pub dmap: Box<[u32; 0x600]>,
 
     /// The width of the pixel map.
     pub map_width: u32,
@@ -101,7 +106,7 @@ impl Asset for Font {
             range_end,
             charset,
             aa_level,
-            dmap: Box::new(dmap),
+            dmap: Box::new(Vec::from(dmap)),
             map_width,
             map_height,
             pixel_map,

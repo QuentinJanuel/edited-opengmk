@@ -4,11 +4,13 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 440;
 pub const PARAM_COUNT: usize = 8;
 
+#[derive(Serialize, Deserialize)]
 pub struct CodeAction {
     /// Unique ID that identifies what type of DnD action this is.
     pub id: u32,

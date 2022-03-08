@@ -3,10 +3,12 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 800;
 
+#[derive(Serialize, Deserialize)]
 pub struct IncludedFile {
     /// The name of the included file.
     pub file_name: PascalString,
@@ -40,6 +42,7 @@ pub struct IncludedFile {
     pub remove_at_end: bool,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum ExportSetting {
     NoExport,
     TempFolder,

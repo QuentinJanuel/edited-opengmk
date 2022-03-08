@@ -1,6 +1,9 @@
+
 use crate::{asset::PascalString, colour::Colour};
 
+use serde::{Serialize, Deserialize};
 /// The Settings header for a GM8 game
+#[derive(Serialize, Deserialize)]
 pub struct Settings {
     /// Start in full-screen mode
     pub fullscreen: bool,
@@ -165,7 +168,7 @@ pub struct Settings {
 }
 
 /// The help dialog box associated with a GM8 game
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GameHelpDialog {
     pub bg_colour: Colour,
     pub new_window: bool,

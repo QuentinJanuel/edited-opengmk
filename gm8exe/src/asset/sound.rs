@@ -3,10 +3,12 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 800;
 
+#[derive(Serialize, Deserialize)]
 pub struct Sound {
     /// The asset name present in GML and the editor.
     pub name: PascalString,
@@ -47,6 +49,7 @@ pub struct Sound {
 }
 
 /// Various filters which can be set on any sound.
+#[derive(Serialize, Deserialize)]
 pub struct SoundFX {
     pub chorus: bool,
     pub echo: bool,
@@ -55,7 +58,7 @@ pub struct SoundFX {
     pub reverb: bool,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum SoundKind {
     /// Normal Sound
     Normal = 0,

@@ -3,10 +3,12 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 530;
 
+#[derive(Serialize, Deserialize)]
 pub struct Path {
     /// The asset name present in GML and the editor.
     pub name: PascalString,
@@ -25,7 +27,7 @@ pub struct Path {
     pub points: Vec<Point>,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ConnectionKind {
     /// Normal, linear point-to-point path.
     StraightLine = 0,
@@ -34,6 +36,7 @@ pub enum ConnectionKind {
     SmoothCurve = 1,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Point {
     pub x: f64,
     pub y: f64,

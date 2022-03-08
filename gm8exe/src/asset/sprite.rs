@@ -11,6 +11,8 @@ pub const VERSION: u32 = 800;
 pub const VERSION_COLLISION: u32 = 800;
 pub const VERSION_FRAME: u32 = 800;
 
+use serde::{Serialize, Deserialize};
+#[derive(Serialize, Deserialize)]
 pub struct Sprite {
     /// The asset name present in GML and the editor.
     pub name: PascalString,
@@ -32,12 +34,14 @@ pub struct Sprite {
     pub per_frame_colliders: bool,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Frame {
     pub width: u32,
     pub height: u32,
     pub data: Box<[u8]>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct CollisionMap {
     // width of the boolean map
     pub width: u32,

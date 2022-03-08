@@ -3,11 +3,13 @@ use crate::{
     GameVersion,
 };
 use byteorder::{ReadBytesExt, WriteBytesExt, LE};
+use serde::{Serialize, Deserialize};
 use std::io::{self, Read};
 
 pub const VERSION: u32 = 500;
 pub const VERSION_MOMENT: u32 = 400;
 
+#[derive(Serialize, Deserialize)]
 pub struct Timeline {
     /// The asset name present in GML and the editor.
     pub name: PascalString,

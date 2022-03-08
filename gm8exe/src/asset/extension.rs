@@ -9,6 +9,8 @@ pub const VERSION: u32 = 700;
 
 const ARG_MAX: usize = 17;
 
+use serde::{Serialize, Deserialize};
+#[derive(Serialize, Deserialize)]
 pub struct Extension {
     /// The name of the extension.
     pub name: PascalString,
@@ -20,6 +22,7 @@ pub struct Extension {
     pub files: Vec<File>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct File {
     /// The name of the file.
     pub name: PascalString,
@@ -43,13 +46,14 @@ pub struct File {
     pub contents: Box<[u8]>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct FileConst {
     pub name: PascalString,
     pub value: PascalString,
 }
 
 /// These const values are in line with the GM8 format. There is no zero.
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FileKind {
     DynamicLibrary = 1,
     GmlScript = 2,
@@ -70,7 +74,7 @@ impl From<u32> for FileKind {
 }
 
 /// This is in line with GM8 data and there is no value corresponding to zero.
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FunctionValueKind {
     GMString = 1,
     GMReal = 2,
@@ -86,6 +90,7 @@ impl From<u32> for FunctionValueKind {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct FileFunction {
     pub name: PascalString,
     pub external_name: PascalString,
@@ -96,7 +101,7 @@ pub struct FileFunction {
     pub return_type: FunctionValueKind,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum CallingConvention {
     Gml = 2,
     Stdcall = 11,

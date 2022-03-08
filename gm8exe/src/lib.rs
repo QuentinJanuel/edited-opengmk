@@ -33,6 +33,8 @@ use settings::{GameHelpDialog, Settings};
 
 pub type AssetList<T> = Vec<Option<Box<T>>>;
 
+use serde::{Serialize, Deserialize};
+#[derive(Serialize, Deserialize)]
 pub struct GameAssets {
     pub triggers: AssetList<Trigger>,
     pub constants: Vec<Constant>,
@@ -62,7 +64,7 @@ pub struct GameAssets {
     pub guid: [u32; 4],
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum GameVersion {
     GameMaker8_0,
     GameMaker8_1,

@@ -90,7 +90,8 @@ fn assert_ver_multiple(got: u32, expected: &[u32]) -> Result<(), Error> {
     if expected.contains(&got) { Ok(()) } else { Err(Error::VersionError { expected: expected[0], got }) }
 }
 
-#[derive(Debug, Default)]
+use serde::{Serialize, Deserialize};
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PascalString(pub Box<[u8]>);
 
 impl Display for PascalString {
