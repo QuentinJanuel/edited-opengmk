@@ -20,19 +20,19 @@ use std::process;
 const EXIT_SUCCESS: i32 = 0;
 const EXIT_FAILURE: i32 = 1;
 
-fn main() {
-    let data = {
-        use std::io::prelude::*;
-        let mut file = std::fs::File::open("test/assets.map")
-            .expect("Failed to open file");
-        let mut buffer = Vec::<u8>::new();
-        file.read_to_end(&mut buffer)
-            .expect("Failed to read file");
-        buffer
-    };
-    let code = run(&data[..]);
-    process::exit(code);
-}
+// fn main() {
+//     let data = {
+//         use std::io::prelude::*;
+//         let mut file = std::fs::File::open("test/assets.map")
+//             .expect("Failed to open file");
+//         let mut buffer = Vec::<u8>::new();
+//         file.read_to_end(&mut buffer)
+//             .expect("Failed to read file");
+//         buffer
+//     };
+//     let code = run(&data[..]);
+//     process::exit(code);
+// }
 
 fn run(data: &[u8]) -> i32 {
     let spoof_time = true; // !matches.opt_present("r");
