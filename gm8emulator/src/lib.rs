@@ -34,7 +34,7 @@ const EXIT_FAILURE: i32 = 1;
 //     process::exit(code);
 // }
 
-fn run(data: &[u8]) -> i32 {
+pub fn run(data: &[u8]) -> i32 {
     let spoof_time = true; // !matches.opt_present("r");
     let frame_limiter = true; // !matches.opt_present("l");
     let game_args = vec![String::new()];

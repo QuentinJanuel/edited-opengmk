@@ -105,46 +105,46 @@ fn rgb_to_hsv(colour: i32) -> (i32, i32, i32) {
 impl Game {
     pub fn display_get_width(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        if self.play_type == PlayType::Normal {
-            platform::display_width().map(Value::from).ok_or_else(|| {
-                gml::Error::FunctionError("display_get_width".into(), "getting display width failed".into())
-            })
-        } else {
+        // if self.play_type == PlayType::Normal {
+        //     platform::display_width().map(Value::from).ok_or_else(|| {
+        //         gml::Error::FunctionError("display_get_width".into(), "getting display width failed".into())
+        //     })
+        // } else {
             Ok(1280.into())
-        }
+        // }
     }
 
     pub fn display_get_height(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        if self.play_type == PlayType::Normal {
-            platform::display_height().map(Value::from).ok_or_else(|| {
-                gml::Error::FunctionError("display_get_height".into(), "getting display height failed".into())
-            })
-        } else {
+        // if self.play_type == PlayType::Normal {
+        //     platform::display_height().map(Value::from).ok_or_else(|| {
+        //         gml::Error::FunctionError("display_get_height".into(), "getting display height failed".into())
+        //     })
+        // } else {
             Ok(720.into())
-        }
+        // }
     }
 
     pub fn display_get_colordepth(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        if self.play_type == PlayType::Normal {
-            platform::display_colour_depth().map(Value::from).ok_or_else(|| {
-                gml::Error::FunctionError("display_get_colordepth".into(), "getting display colour depth failed".into())
-            })
-        } else {
+        // if self.play_type == PlayType::Normal {
+        //     platform::display_colour_depth().map(Value::from).ok_or_else(|| {
+        //         gml::Error::FunctionError("display_get_colordepth".into(), "getting display colour depth failed".into())
+        //     })
+        // } else {
             Ok(32.into())
-        }
+        // }
     }
 
     pub fn display_get_frequency(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        if self.play_type == PlayType::Normal {
-            platform::display_frequency().map(Value::from).ok_or_else(|| {
-                gml::Error::FunctionError("display_get_frequency".into(), "getting display frequency failed".into())
-            })
-        } else {
+        // if self.play_type == PlayType::Normal {
+        //     platform::display_frequency().map(Value::from).ok_or_else(|| {
+        //         gml::Error::FunctionError("display_get_frequency".into(), "getting display frequency failed".into())
+        //     })
+        // } else {
             Ok(60.into())
-        }
+        // }
     }
 
     pub fn display_set_size(&mut self, _args: &[Value]) -> gml::Result<Value> {
@@ -6628,29 +6628,29 @@ impl Game {
     }
 
     pub fn disk_free(&self, args: &[Value]) -> gml::Result<Value> {
-        if self.play_type == PlayType::Normal {
-            let path = match args.get(0).clone() {
-                Some(Value::Str(p)) => p.as_ref().get(0).map(|&x| x as char),
-                _ => None,
-            };
-            Ok(platform::disk_free(path).map(|x| x as f64).unwrap_or(-1f64).into())
-        } else {
+        // if self.play_type == PlayType::Normal {
+        //     let path = match args.get(0).clone() {
+        //         Some(Value::Str(p)) => p.as_ref().get(0).map(|&x| x as char),
+        //         _ => None,
+        //     };
+        //     Ok(platform::disk_free(path).map(|x| x as f64).unwrap_or(-1f64).into())
+        // } else {
             // half a terabyte
             Ok((0x80000_00000u64 as f64).into())
-        }
+        // }
     }
 
     pub fn disk_size(&self, args: &[Value]) -> gml::Result<Value> {
-        if self.play_type == PlayType::Normal {
-            let path = match args.get(0).clone() {
-                Some(Value::Str(p)) => p.as_ref().get(0).map(|&x| x as char),
-                _ => None,
-            };
-            Ok(platform::disk_size(path).map(|x| x as f64).unwrap_or(-1f64).into())
-        } else {
+        // if self.play_type == PlayType::Normal {
+        //     let path = match args.get(0).clone() {
+        //         Some(Value::Str(p)) => p.as_ref().get(0).map(|&x| x as char),
+        //         _ => None,
+        //     };
+        //     Ok(platform::disk_size(path).map(|x| x as f64).unwrap_or(-1f64).into())
+        // } else {
             // a terabyte
             Ok((0x1_00000_00000u64 as f64).into())
-        }
+        // }
     }
 
     pub fn splash_set_caption(&mut self, _args: &[Value]) -> gml::Result<Value> {
@@ -7648,7 +7648,7 @@ impl Game {
 
     pub fn window_handle(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        #[cfg(target_os = "windows")]
+        // #[cfg(target_os = "windows")]
         {
             // use ramen::platform::win32::WindowExt as _;
             // Ok((self.window.hwnd() as usize).into())

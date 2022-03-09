@@ -40,6 +40,7 @@ pub struct WavHandle {
 
 #[derive(Serialize, Deserialize)]
 pub struct SoundParams {
+    #[serde(skip)]
     pub volume: AtomicU32,
 }
 
@@ -261,6 +262,7 @@ impl WavHandle {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct AudioState {
+    #[serde(skip)]
     global_volume: Arc<AtomicU32>,
     end_times: HashMap<i32, Option<u128>>,
     multimedia_end: Option<(i32, Option<u128>)>,
