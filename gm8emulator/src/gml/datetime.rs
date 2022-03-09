@@ -2,27 +2,29 @@ use crate::{gml::Value, math::Real};
 use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 
 /// Sleep for T minus 1 millisecond, and busywait for the rest of the duration.
-pub fn sleep(dur: std::time::Duration) {
+pub fn sleep(dur: instant::Duration) {
     // TODO: find a more precise way to sleep?
-    let begin = std::time::Instant::now();
-    if let Some(sleep_time) = dur.checked_sub(std::time::Duration::from_millis(1)) {
-        std::thread::sleep(sleep_time);
-    }
-    while std::time::Instant::now() < begin + dur {}
+    // let begin = instant::Instant::now();
+    // if let Some(sleep_time) = dur.checked_sub(instant::Duration::from_millis(1)) {
+    //     std::thread::sleep(sleep_time);
+    // }
+    // while instant::Instant::now() < begin + dur {}
 }
 
 fn epoch() -> PrimitiveDateTime {
     time::macros::date!(1899 - 12 - 30).midnight()
 }
 
-fn now() -> time::OffsetDateTime {
-    OffsetDateTime::now_utc()
-        + time::Duration::seconds(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC).whole_seconds().into())
+fn now() -> instant::Instant {
+    instant::Instant::now()
+    // OffsetDateTime::now_utc()
+        // + time::Duration::seconds(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC).whole_seconds().into())
 }
 
 pub fn now_as_nanos() -> u128 {
-    let datetime = now();
-    datetime.unix_timestamp_nanos().try_into().unwrap_or(0)
+    // let datetime = now();
+    0
+    // datetime.unix_timestamp_nanos().try_into().unwrap_or(0)
 }
 
 fn i32_to_month(m: i32) -> Option<time::Month> {
@@ -57,8 +59,12 @@ impl DateTime {
                     + time::Duration::nanoseconds((nanos % 1_000_000_000) as _)
             },
             None => {
-                let dt = now();
-                dt.date().with_time(dt.time())
+                // let dt = now();
+                // dt.date().with_time(dt.time())
+                PrimitiveDateTime::new(
+                    time::Date::MIN,
+                    time::Time::MIDNIGHT,
+                )
             },
         })
     }

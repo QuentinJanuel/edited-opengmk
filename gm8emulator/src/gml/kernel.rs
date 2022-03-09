@@ -5720,7 +5720,7 @@ impl Game {
     pub fn sleep(&mut self, args: &[Value]) -> gml::Result<Value> {
         let millis = expect_args!(args, [int])?;
         if millis > 0 {
-            datetime::sleep(std::time::Duration::from_millis(millis as u64));
+            datetime::sleep(instant::Duration::from_millis(millis as u64));
             if let Some(ns) = self.spoofed_time_nanos.as_mut() {
                 *ns += (millis as u128) * 1_000_000;
             }
@@ -5806,437 +5806,472 @@ impl Game {
             1 => file::AccessMode::Write,
             2 | _ => file::AccessMode::Special,
         };
-        match self.binary_files.add_from(|| Ok(file::BinaryHandle::open(filename.as_ref(), mode)?)) {
-            Ok(i) => Ok((i + 1).into()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_open".into(), e.to_string())),
-        }
+        // match self.binary_files.add_from(|| Ok(file::BinaryHandle::open(filename.as_ref(), mode)?)) {
+        //     Ok(i) => Ok((i + 1).into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_open".into(), e.to_string())),
+        // }
+        Ok(1.into())
     }
 
     pub fn file_bin_rewrite(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.clear()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_rewrite".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.clear()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_rewrite".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_bin_close(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
+        // let handle = expect_args!(args, [int])?;
 
         // flush buffer if possible
-        self.binary_files
-            .get_mut(handle - 1)
-            .map_or(Err(file::Error::InvalidFile(handle)), |f| f.flush())
-            .map_err(|e| gml::Error::FunctionError("file_bin_close".into(), e.to_string()))?;
+        // self.binary_files
+        //     .get_mut(handle - 1)
+        //     .map_or(Err(file::Error::InvalidFile(handle)), |f| f.flush())
+        //     .map_err(|e| gml::Error::FunctionError("file_bin_close".into(), e.to_string()))?;
 
-        if self.binary_files.delete(handle - 1) {
+        // if self.binary_files.delete(handle - 1) {
             Ok(Default::default())
-        } else {
-            Err(gml::Error::FunctionError("file_bin_close".into(), file::Error::InvalidFile(handle).to_string()))
-        }
+        // } else {
+            // Err(gml::Error::FunctionError("file_bin_close".into(), file::Error::InvalidFile(handle).to_string()))
+        // }
     }
 
     pub fn file_bin_position(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.tell()) {
-            Ok(p) => Ok(f64::from(p as i32).into()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_position".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.tell()) {
+        //     Ok(p) => Ok(f64::from(p as i32).into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_position".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_bin_size(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.size()) {
-            Ok(l) => Ok(f64::from(l as i32).into()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_size".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.size()) {
+        //     Ok(l) => Ok(f64::from(l as i32).into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_size".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_bin_seek(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (handle, pos) = expect_args!(args, [int, int])?;
-        match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.seek(pos)) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_seek".into(), e.to_string())),
-        }
+        // let (handle, pos) = expect_args!(args, [int, int])?;
+        // match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.seek(pos)) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_seek".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_bin_read_byte(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.read_byte()) {
-            Ok(b) => Ok(f64::from(b).into()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_read_byte".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.binary_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.read_byte()) {
+        //     Ok(b) => Ok(f64::from(b).into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_read_byte".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_bin_write_byte(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (handle, byte) = expect_args!(args, [int, int])?;
-        match self
-            .binary_files
-            .get_mut(handle - 1)
-            .map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_byte(byte as u8))
-        {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_bin_write_byte".into(), e.to_string())),
-        }
+        // let (handle, byte) = expect_args!(args, [int, int])?;
+        // match self
+        //     .binary_files
+        //     .get_mut(handle - 1)
+        //     .map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_byte(byte as u8))
+        // {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_bin_write_byte".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_open_read(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        use std::error::Error as _; // for .source() trait method
+        // let filename = expect_args!(args, [string])?;
+        // use std::error::Error as _; // for .source() trait method
 
-        match self.text_files.add_from(|| Ok(file::TextHandle::open(filename.as_ref(), file::AccessMode::Read)?)) {
-            Ok(i) => Ok((i + 1).into()),
-            Err(e)
-                if e.source()
-                    .and_then(|r| r.downcast_ref::<std::io::Error>())
-                    .map_or(false, |s| s.kind() == std::io::ErrorKind::NotFound) =>
-            {
-                Ok((-1).into())
-            },
-            Err(e) => Err(gml::Error::FunctionError("file_text_open_read".into(), e.to_string())),
-        }
+        // match self.text_files.add_from(|| Ok(file::TextHandle::open(filename.as_ref(), file::AccessMode::Read)?)) {
+        //     Ok(i) => Ok((i + 1).into()),
+        //     Err(e)
+        //         if e.source()
+        //             .and_then(|r| r.downcast_ref::<std::io::Error>())
+        //             .map_or(false, |s| s.kind() == std::io::ErrorKind::NotFound) =>
+        //     {
+        //         Ok((-1).into())
+        //     },
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_open_read".into(), e.to_string())),
+        // }
+        Ok(1.into())
     }
 
     pub fn file_text_open_write(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        match self.text_files.add_from(|| Ok(file::TextHandle::open(filename.as_ref(), file::AccessMode::Write)?)) {
-            Ok(i) => Ok((i + 1).into()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_open_write".into(), e.to_string())),
-        }
+        // let filename = expect_args!(args, [string])?;
+        // match self.text_files.add_from(|| Ok(file::TextHandle::open(filename.as_ref(), file::AccessMode::Write)?)) {
+        //     Ok(i) => Ok((i + 1).into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_open_write".into(), e.to_string())),
+        // }
+        Ok(1.into())
     }
 
     pub fn file_text_open_append(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        match self.text_files.add_from(|| Ok(file::TextHandle::open(filename.as_ref(), file::AccessMode::Special)?)) {
-            Ok(i) => Ok((i + 1).into()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_open_append".into(), e.to_string())),
-        }
+        // let filename = expect_args!(args, [string])?;
+        // match self.text_files.add_from(|| Ok(file::TextHandle::open(filename.as_ref(), file::AccessMode::Special)?)) {
+        //     Ok(i) => Ok((i + 1).into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_open_append".into(), e.to_string())),
+        // }
+        Ok(1.into())
     }
 
     pub fn file_text_close(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        let c = self.text_files.capacity();
+        // let handle = expect_args!(args, [int])?;
+        // let c = self.text_files.capacity();
 
-        // flush buffer if possible
-        self.text_files
-            .get_mut(handle - 1)
-            .map_or(Err(file::Error::InvalidFile(handle)), |f| f.flush())
-            .map_err(|e| gml::Error::FunctionError("file_text_close".into(), e.to_string()))?;
+        // // flush buffer if possible
+        // self.text_files
+        //     .get_mut(handle - 1)
+        //     .map_or(Err(file::Error::InvalidFile(handle)), |f| f.flush())
+        //     .map_err(|e| gml::Error::FunctionError("file_text_close".into(), e.to_string()))?;
 
-        // NB: .delete() MUST be called - beware the short-circuit evaluation here!
-        if self.text_files.delete(handle - 1) || (1..=c).contains(&handle) {
-            Ok(Default::default())
-        } else {
-            Err(gml::Error::FunctionError("file_text_close".into(), file::Error::InvalidFile(handle).to_string()))
-        }
+        // // NB: .delete() MUST be called - beware the short-circuit evaluation here!
+        // if self.text_files.delete(handle - 1) || (1..=c).contains(&handle) {
+        //     Ok(Default::default())
+        // } else {
+        //     Err(gml::Error::FunctionError("file_text_close".into(), file::Error::InvalidFile(handle).to_string()))
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_read_string(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.read_string()) {
-            Ok(s) => Ok(s.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_read_string".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.read_string()) {
+        //     Ok(s) => Ok(s.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_read_string".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_read_real(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.read_real()) {
-            Ok(r) => Ok(r.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_read_real".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.read_real()) {
+        //     Ok(r) => Ok(r.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_read_real".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_readln(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.skip_line()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_readln".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.skip_line()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_readln".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_eof(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.is_eof()) {
-            Ok(res) => Ok(res.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_eof".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.is_eof()) {
+        //     Ok(res) => Ok(res.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_eof".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_eoln(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.is_eoln()) {
-            Ok(res) => Ok(res.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_eoln".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.is_eoln()) {
+        //     Ok(res) => Ok(res.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_eoln".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_write_string(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (handle, text) = expect_args!(args, [int, bytes])?;
-        match self
-            .text_files
-            .get_mut(handle - 1)
-            .map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_string(text.as_ref()))
-        {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_write_string".into(), e.to_string())),
-        }
+        // let (handle, text) = expect_args!(args, [int, bytes])?;
+        // match self
+        //     .text_files
+        //     .get_mut(handle - 1)
+        //     .map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_string(text.as_ref()))
+        // {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_write_string".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_write_real(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (handle, num) = expect_args!(args, [int, real])?;
-        match self
-            .text_files
-            .get_mut(handle - 1)
-            .map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_real(num.into()))
-        {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_write_real".into(), e.to_string())),
-        }
+        // let (handle, num) = expect_args!(args, [int, real])?;
+        // match self
+        //     .text_files
+        //     .get_mut(handle - 1)
+        //     .map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_real(num.into()))
+        // {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_write_real".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_text_writeln(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let handle = expect_args!(args, [int])?;
-        match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_newline()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_text_writeln".into(), e.to_string())),
-        }
+        // let handle = expect_args!(args, [int])?;
+        // match self.text_files.get_mut(handle - 1).map_or(Err(file::Error::InvalidFile(handle)), |f| f.write_newline()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_text_writeln".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_open_read(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        match file::TextHandle::open(filename.as_ref(), file::AccessMode::Read) {
-            Ok(f) => {
-                self.open_file.replace(f);
-            },
-            Err(e) => {
-                self.open_file.take();
-                if e.kind() != std::io::ErrorKind::NotFound {
-                    return Err(gml::Error::FunctionError("file_open_read".into(), e.to_string()))
-                }
-            },
-        };
+        // let filename = expect_args!(args, [string])?;
+        // match file::TextHandle::open(filename.as_ref(), file::AccessMode::Read) {
+        //     Ok(f) => {
+        //         self.open_file.replace(f);
+        //     },
+        //     Err(e) => {
+        //         self.open_file.take();
+        //         if e.kind() != std::io::ErrorKind::NotFound {
+        //             return Err(gml::Error::FunctionError("file_open_read".into(), e.to_string()))
+        //         }
+        //     },
+        // };
         Ok(Default::default())
     }
 
     pub fn file_open_write(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        match file::TextHandle::open(filename.as_ref(), file::AccessMode::Write) {
-            Ok(f) => {
-                self.open_file.replace(f);
-                Ok(Default::default())
-            },
-            Err(e) => {
-                self.open_file.take();
-                Err(gml::Error::FunctionError("file_open_write".into(), e.to_string()))
-            },
-        }
+        // let filename = expect_args!(args, [string])?;
+        // match file::TextHandle::open(filename.as_ref(), file::AccessMode::Write) {
+        //     Ok(f) => {
+        //         self.open_file.replace(f);
+        //         Ok(Default::default())
+        //     },
+        //     Err(e) => {
+        //         self.open_file.take();
+        //         Err(gml::Error::FunctionError("file_open_write".into(), e.to_string()))
+        //     },
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_open_append(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        match file::TextHandle::open(filename.as_ref(), file::AccessMode::Special) {
-            Ok(f) => {
-                self.open_file.replace(f);
-                Ok(Default::default())
-            },
-            Err(e) => {
-                self.open_file.take();
-                Err(gml::Error::FunctionError("file_open_append".into(), e.to_string()))
-            },
-        }
+        // let filename = expect_args!(args, [string])?;
+        // match file::TextHandle::open(filename.as_ref(), file::AccessMode::Special) {
+        //     Ok(f) => {
+        //         self.open_file.replace(f);
+        //         Ok(Default::default())
+        //     },
+        //     Err(e) => {
+        //         self.open_file.take();
+        //         Err(gml::Error::FunctionError("file_open_append".into(), e.to_string()))
+        //     },
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_close(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.take() {
-            Some(mut f) => match f.flush() {
-                Ok(()) => Ok(Default::default()),
-                Err(e) => Err(gml::Error::FunctionError("file_close".into(), e.to_string())),
-            },
-            None => Ok(Default::default()),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.take() {
+        //     Some(mut f) => match f.flush() {
+        //         Ok(()) => Ok(Default::default()),
+        //         Err(e) => Err(gml::Error::FunctionError("file_close".into(), e.to_string())),
+        //     },
+        //     None => Ok(Default::default()),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_read_string(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.read_string()) {
-            Ok(s) => Ok(s.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_read_string".into(), e.to_string())),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.read_string()) {
+        //     Ok(s) => Ok(s.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_read_string".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_read_real(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.read_real()) {
-            Ok(r) => Ok(r.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_read_real".into(), e.to_string())),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.read_real()) {
+        //     Ok(r) => Ok(r.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_read_real".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_readln(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.skip_line()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_readln".into(), e.to_string())),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.skip_line()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_readln".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_eof(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.is_eof()) {
-            Ok(res) => Ok(res.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_eof".into(), e.to_string())),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.is_eof()) {
+        //     Ok(res) => Ok(res.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_eof".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_eoln(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.is_eoln()) {
-            Ok(res) => Ok(res.into()),
-            Err(e) => Err(gml::Error::FunctionError("file_eoln".into(), e.to_string())),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.is_eoln()) {
+        //     Ok(res) => Ok(res.into()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_eoln".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_write_string(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let text = expect_args!(args, [bytes])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.write_string(text.as_ref())) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_write_string".into(), e.to_string())),
-        }
+        // let text = expect_args!(args, [bytes])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.write_string(text.as_ref())) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_write_string".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_write_real(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let num = expect_args!(args, [real])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.write_real(num.into())) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_write_real".into(), e.to_string())),
-        }
+        // let num = expect_args!(args, [real])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.write_real(num.into())) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_write_real".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_writeln(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.write_newline()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_writeln".into(), e.to_string())),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_file.as_mut().map_or(Err(file::Error::LegacyFileUnopened), |f| f.write_newline()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_writeln".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_exists(&self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [any]).map(|x| match x {
-            Value::Str(s) => file::file_exists(&self.decode_str(s.as_ref())).into(),
-            Value::Real(_) => gml::FALSE.into(),
-        })
+        // expect_args!(args, [any]).map(|x| match x {
+        //     Value::Str(s) => file::file_exists(&self.decode_str(s.as_ref())).into(),
+        //     Value::Real(_) => gml::FALSE.into(),
+        // })
+        Ok(Default::default())
     }
 
     pub fn file_delete(&self, args: &[Value]) -> gml::Result<Value> {
-        let filename = expect_args!(args, [string])?;
-        match file::delete(filename.as_ref()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("file_delete".into(), e.to_string())),
-        }
+        // let filename = expect_args!(args, [string])?;
+        // match file::delete(filename.as_ref()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("file_delete".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_rename(&self, args: &[Value]) -> gml::Result<Value> {
-        let (from, to) = expect_args!(args, [string, string])?;
-        if file::rename(from.as_ref(), to.as_ref()).is_err() {
-            // Fail silently
-            eprintln!("Warning (file_rename): could not rename {} to {}", from, to);
-        }
+        // let (from, to) = expect_args!(args, [string, string])?;
+        // if file::rename(from.as_ref(), to.as_ref()).is_err() {
+        //     // Fail silently
+        //     eprintln!("Warning (file_rename): could not rename {} to {}", from, to);
+        // }
         Ok(Default::default())
     }
 
     pub fn file_copy(&self, args: &[Value]) -> gml::Result<Value> {
-        let (from, to) = expect_args!(args, [string, string])?;
-        if file::copy(from.as_ref(), to.as_ref()).is_err() {
-            // Fail silently
-            eprintln!("Warning (file_copy): could not copy {} to {}", from, to);
-        }
+        // let (from, to) = expect_args!(args, [string, string])?;
+        // if file::copy(from.as_ref(), to.as_ref()).is_err() {
+        //     // Fail silently
+        //     eprintln!("Warning (file_copy): could not copy {} to {}", from, to);
+        // }
         Ok(Default::default())
     }
 
     pub fn directory_exists(&self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [any]).map(|x| match x {
-            Value::Str(s) => file::dir_exists(&self.decode_str(s.as_ref())).into(),
-            Value::Real(_) => gml::FALSE.into(),
-        })
+        // expect_args!(args, [any]).map(|x| match x {
+        //     Value::Str(s) => file::dir_exists(&self.decode_str(s.as_ref())).into(),
+        //     Value::Real(_) => gml::FALSE.into(),
+        // })
+        Ok(1.into())
     }
 
     pub fn directory_create(&self, args: &[Value]) -> gml::Result<Value> {
-        let path = expect_args!(args, [string])?;
-        match file::dir_create(path.as_ref()) {
-            Ok(()) => Ok(Default::default()),
-            Err(e) => Err(gml::Error::FunctionError("directory_create".into(), e.to_string())),
-        }
+        // let path = expect_args!(args, [string])?;
+        // match file::dir_create(path.as_ref()) {
+        //     Ok(()) => Ok(Default::default()),
+        //     Err(e) => Err(gml::Error::FunctionError("directory_create".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_find_first(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (path, attribs) = expect_args!(args, [string, int])?;
-        if path.ends_with("/") || path.ends_with("\\") {
-            // match nothing
-            self.file_finder = None;
-            return Ok(b"".as_ref().into())
-        }
-        // unwrap arguments
-        let path: &str = path.as_ref();
-        let include_read_only = (attribs & 1) != 0;
-        let include_hidden = (attribs & 2) != 0;
-        let include_sys_file = (attribs & 4) != 0;
-        let include_volume_id = (attribs & 8) != 0;
-        let include_directory = (attribs & 16) != 0;
-        let include_archive = (attribs & 32) != 0;
-        match glob::glob_with(path, glob::MatchOptions { case_sensitive: false, ..Default::default() }) {
-            Ok(paths) => {
-                // add . and .. to start if necessary
-                let path: &std::path::Path = path.as_ref();
-                let preceding: Vec<std::path::PathBuf> = match path.file_name().and_then(|p| p.to_str()) {
-                    Some("*") | Some(".*") | Some("*.") => vec![".".into(), "..".into()],
-                    Some(".") => vec![".".into()],
-                    Some("..") => vec!["..".into()],
-                    _ => vec![],
-                };
-                self.file_finder = Some(Box::new(
-                    preceding.into_iter().chain(
-                        paths
-                            .filter_map(Result::ok)
-                            .filter(move |p| {
-                                let md = match p.metadata() {
-                                    Ok(m) => m,
-                                    Err(_) => return false,
-                                };
-                                let is_dir = md.is_dir();
-                                // false means the check isn't in yet
-                                // also note: apparently directories are read only?
-                                (include_read_only || is_dir || !md.permissions().readonly())
-                                    && (include_hidden || !false)
-                                    && (include_sys_file || !false)
-                                    && (include_volume_id || !false)
-                                    && (include_directory || !is_dir)
-                                    && (include_archive || !false)
-                            })
-                            .map(|p| p.file_name().map(|p| p.into()).unwrap_or(p)),
-                    ),
-                ));
-                self.file_find_next(&[])
-            },
-            Err(e) => Err(gml::Error::FunctionError("file_find_first".into(), e.to_string())),
-        }
+        // let (path, attribs) = expect_args!(args, [string, int])?;
+        // if path.ends_with("/") || path.ends_with("\\") {
+        //     // match nothing
+        //     self.file_finder = None;
+        //     return Ok(b"".as_ref().into())
+        // }
+        // // unwrap arguments
+        // let path: &str = path.as_ref();
+        // let include_read_only = (attribs & 1) != 0;
+        // let include_hidden = (attribs & 2) != 0;
+        // let include_sys_file = (attribs & 4) != 0;
+        // let include_volume_id = (attribs & 8) != 0;
+        // let include_directory = (attribs & 16) != 0;
+        // let include_archive = (attribs & 32) != 0;
+        // match glob::glob_with(path, glob::MatchOptions { case_sensitive: false, ..Default::default() }) {
+        //     Ok(paths) => {
+        //         // add . and .. to start if necessary
+        //         let path: &std::path::Path = path.as_ref();
+        //         let preceding: Vec<std::path::PathBuf> = match path.file_name().and_then(|p| p.to_str()) {
+        //             Some("*") | Some(".*") | Some("*.") => vec![".".into(), "..".into()],
+        //             Some(".") => vec![".".into()],
+        //             Some("..") => vec!["..".into()],
+        //             _ => vec![],
+        //         };
+        //         self.file_finder = Some(Box::new(
+        //             preceding.into_iter().chain(
+        //                 paths
+        //                     .filter_map(Result::ok)
+        //                     .filter(move |p| {
+        //                         let md = match p.metadata() {
+        //                             Ok(m) => m,
+        //                             Err(_) => return false,
+        //                         };
+        //                         let is_dir = md.is_dir();
+        //                         // false means the check isn't in yet
+        //                         // also note: apparently directories are read only?
+        //                         (include_read_only || is_dir || !md.permissions().readonly())
+        //                             && (include_hidden || !false)
+        //                             && (include_sys_file || !false)
+        //                             && (include_volume_id || !false)
+        //                             && (include_directory || !is_dir)
+        //                             && (include_archive || !false)
+        //                     })
+        //                     .map(|p| p.file_name().map(|p| p.into()).unwrap_or(p)),
+        //             ),
+        //         ));
+        //         self.file_find_next(&[])
+        //     },
+        //     Err(e) => Err(gml::Error::FunctionError("file_find_first".into(), e.to_string())),
+        // }
+        Ok(Default::default())
     }
 
     pub fn file_find_next(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        while let Some(p) = self.file_finder.as_mut().and_then(|ff| ff.next()) {
-            if let Some(p) = p.to_str().and_then(|p| self.encode_str_maybe(p)) {
-                return Ok(Value::from(p.as_ref()))
-            }
-        }
-        self.file_finder = None;
+        // expect_args!(args, [])?;
+        // while let Some(p) = self.file_finder.as_mut().and_then(|ff| ff.next()) {
+        //     if let Some(p) = p.to_str().and_then(|p| self.encode_str_maybe(p)) {
+        //         return Ok(Value::from(p.as_ref()))
+        //     }
+        // }
+        // self.file_finder = None;
         Ok(b"".as_ref().into())
     }
 
     pub fn file_find_close(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        self.file_finder = None;
+        // expect_args!(args, [])?;
+        // self.file_finder = None;
         Ok(Default::default())
     }
 
@@ -6246,153 +6281,163 @@ impl Game {
     }
 
     pub fn filename_name(args: &[Value]) -> gml::Result<Value> {
-        let full_path = expect_args!(args, [string])?;
-        if let Some(name) = full_path.as_ref().rsplitn(2, '\\').next() {
-            Ok(name.to_string().into())
-        } else {
-            Ok(full_path.as_ref().into())
-        }
+        // let full_path = expect_args!(args, [string])?;
+        // if let Some(name) = full_path.as_ref().rsplitn(2, '\\').next() {
+        //     Ok(name.to_string().into())
+        // } else {
+        //     Ok(full_path.as_ref().into())
+        // }
+        Ok(Default::default())
     }
 
     pub fn filename_path(args: &[Value]) -> gml::Result<Value> {
-        let full_path = expect_args!(args, [string])?;
-        if let Some(bs) = full_path.as_ref().rfind('\\') {
-            Ok(full_path.as_ref()[..bs + 1].to_string().into())
-        } else {
-            Ok("".to_string().into())
-        }
+        // let full_path = expect_args!(args, [string])?;
+        // if let Some(bs) = full_path.as_ref().rfind('\\') {
+        //     Ok(full_path.as_ref()[..bs + 1].to_string().into())
+        // } else {
+        //     Ok("".to_string().into())
+        // }
+        Ok(Default::default())
     }
 
     pub fn filename_dir(args: &[Value]) -> gml::Result<Value> {
-        let full_path = expect_args!(args, [string])?;
-        if let Some(bs) = full_path.as_ref().rfind('\\') {
-            Ok(full_path.as_ref()[..bs].to_string().into())
-        } else {
-            Ok("".to_string().into())
-        }
+        // let full_path = expect_args!(args, [string])?;
+        // if let Some(bs) = full_path.as_ref().rfind('\\') {
+        //     Ok(full_path.as_ref()[..bs].to_string().into())
+        // } else {
+        //     Ok("".to_string().into())
+        // }
+        Ok(Default::default())
     }
 
     pub fn filename_drive(args: &[Value]) -> gml::Result<Value> {
-        let full_path = expect_args!(args, [string])?;
-        let drive = full_path.as_ref().chars().take(2).collect::<String>();
-        if !drive.starts_with(':') && drive.ends_with(':') { Ok(drive.into()) } else { Ok("".to_string().into()) }
+        // let full_path = expect_args!(args, [string])?;
+        // let drive = full_path.as_ref().chars().take(2).collect::<String>();
+        // if !drive.starts_with(':') && drive.ends_with(':') { Ok(drive.into()) } else { Ok("".to_string().into()) }
+        Ok(Default::default())
     }
 
     pub fn filename_ext(args: &[Value]) -> gml::Result<Value> {
-        let full_path = expect_args!(args, [string])?;
-        if let Some(dot) = full_path.as_ref().rfind('.') {
-            Ok(full_path.as_ref()[dot..].to_string().into())
-        } else {
-            Ok("".to_string().into())
-        }
+        // let full_path = expect_args!(args, [string])?;
+        // if let Some(dot) = full_path.as_ref().rfind('.') {
+        //     Ok(full_path.as_ref()[dot..].to_string().into())
+        // } else {
+        //     Ok("".to_string().into())
+        // }
+        Ok(Default::default())
     }
 
     pub fn filename_change_ext(args: &[Value]) -> gml::Result<Value> {
-        let (full_path, new_ext) = expect_args!(args, [string, string])?;
-        let mut new_path = full_path.as_ref().rsplitn(2, '.').last().unwrap_or(full_path.as_ref()).to_string();
-        new_path.push_str(new_ext.as_ref());
-        Ok(new_path.into())
+        // let (full_path, new_ext) = expect_args!(args, [string, string])?;
+        // let mut new_path = full_path.as_ref().rsplitn(2, '.').last().unwrap_or(full_path.as_ref()).to_string();
+        // new_path.push_str(new_ext.as_ref());
+        // Ok(new_path.into())
+        Ok(Default::default())
     }
 
     pub fn export_include_file(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let name = expect_args!(args, [bytes])?;
-        // let temp_directory = self.decode_str(self.temp_directory.as_ref()).into_owned().into();
-        // let program_directory = self.decode_str(self.program_directory.as_ref()).into_owned().into();
-        if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
-        {
-            Ok(Default::default())
-            // match file.export(temp_directory, program_directory) {
-            //     Ok(()) => Ok(Default::default()),
-            //     Err(e) => Err(gml::Error::FunctionError("export_include_file".into(), e.to_string())),
-            // }
-        } else {
-            Err(gml::Error::FunctionError("export_include_file".into(), "Trying to export non-existing file.".into()))
-        }
+        // let name = expect_args!(args, [bytes])?;
+        // // let temp_directory = self.decode_str(self.temp_directory.as_ref()).into_owned().into();
+        // // let program_directory = self.decode_str(self.program_directory.as_ref()).into_owned().into();
+        // if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
+        // {
+        //     Ok(Default::default())
+        //     // match file.export(temp_directory, program_directory) {
+        //     //     Ok(()) => Ok(Default::default()),
+        //     //     Err(e) => Err(gml::Error::FunctionError("export_include_file".into(), e.to_string())),
+        //     // }
+        // } else {
+        //     Err(gml::Error::FunctionError("export_include_file".into(), "Trying to export non-existing file.".into()))
+        // }
+        Ok(Default::default())
     }
 
     pub fn export_include_file_location(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (name, path) = expect_args!(args, [bytes, string])?;
-        if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
-        {
-            let path_ref: &str = path.as_ref();
-            match file.export_to(path_ref.as_ref()) {
-                Ok(()) => Ok(Default::default()),
-                Err(e) => Err(gml::Error::FunctionError("export_include_file_location".into(), e.to_string())),
-            }
-        } else {
-            Err(gml::Error::FunctionError(
-                "export_include_file_location".into(),
-                "Trying to export non-existing file.".into(),
-            ))
-        }
+        // let (name, path) = expect_args!(args, [bytes, string])?;
+        // if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
+        // {
+        //     let path_ref: &str = path.as_ref();
+        //     match file.export_to(path_ref.as_ref()) {
+        //         Ok(()) => Ok(Default::default()),
+        //         Err(e) => Err(gml::Error::FunctionError("export_include_file_location".into(), e.to_string())),
+        //     }
+        // } else {
+        //     Err(gml::Error::FunctionError(
+        //         "export_include_file_location".into(),
+        //         "Trying to export non-existing file.".into(),
+        //     ))
+        // }
+        Ok(Default::default())
     }
 
     pub fn discard_include_file(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let name = expect_args!(args, [bytes])?;
-        if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
-        {
-            file.data = None;
-            Ok(Default::default())
-        } else {
-            Err(gml::Error::FunctionError("discard_include_file".into(), "Trying to discard non-existing file.".into()))
-        }
+        // let name = expect_args!(args, [bytes])?;
+        // if let Some(file) = self.included_files.iter_mut().filter(|i| name.eq_ignore_ascii_case(i.name.as_ref())).next()
+        // {
+        //     file.data = None;
+        //     Ok(Default::default())
+        // } else {
+        //     Err(gml::Error::FunctionError("discard_include_file".into(), "Trying to discard non-existing file.".into()))
+        // }
+        Ok(Default::default())
     }
 
     pub fn execute_program(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (prog, prog_args, wait) = expect_args!(args, [string, string, bool])?;
-        // Rust doesn't let you execute a program with just a string, so unescape it manually
-        let mut command_array = Vec::new();
-        let mut buf = Some(String::new());
-        let mut quote_count = 0;
-        for c in format!("{} {}", prog, prog_args).replace("\\\"", "\"\"\"").chars() {
-            match c {
-                '"' => {
-                    buf = buf.or(Some("".into()));
-                    quote_count += 1;
-                    if quote_count > 2 {
-                        quote_count = 0;
-                        buf.as_mut().unwrap().push('"');
-                    }
-                },
-                c if c.is_whitespace() && quote_count != 1 => {
-                    quote_count %= 2;
-                    if let Some(s) = buf {
-                        command_array.push(s);
-                        buf = None;
-                    }
-                },
-                c => {
-                    quote_count %= 2;
-                    buf = buf.or(Some("".into()));
-                    buf.as_mut().unwrap().push(c);
-                },
-            }
-        }
-        if let Some(s) = buf {
-            command_array.push(s);
-        }
-        if command_array.is_empty() {
-            return Err(gml::Error::FunctionError("execute_program".into(), "Cannot execute an empty string".into()))
-        }
-        // Actually run the program
-        match Command::new(&command_array[0]).args(&command_array[1..]).spawn() {
-            Ok(mut child) => {
-                if wait {
-                    // wait() closes stdin. This is inaccurate, but Rust doesn't offer an alternative.
-                    if let Err(e) = child.wait() {
-                        return Err(gml::Error::FunctionError(
-                            "execute_program".into(),
-                            format!("Cannot wait for {}: {}", prog, e),
-                        ))
-                    }
-                    self.process_window_events();
-                }
-                Ok(Default::default())
-            },
-            Err(e) => {
-                Err(gml::Error::FunctionError("execute_program".into(), format!("Cannot execute {}: {}", prog, e)))
-            },
-        }
+        // let (prog, prog_args, wait) = expect_args!(args, [string, string, bool])?;
+        // // Rust doesn't let you execute a program with just a string, so unescape it manually
+        // let mut command_array = Vec::new();
+        // let mut buf = Some(String::new());
+        // let mut quote_count = 0;
+        // for c in format!("{} {}", prog, prog_args).replace("\\\"", "\"\"\"").chars() {
+        //     match c {
+        //         '"' => {
+        //             buf = buf.or(Some("".into()));
+        //             quote_count += 1;
+        //             if quote_count > 2 {
+        //                 quote_count = 0;
+        //                 buf.as_mut().unwrap().push('"');
+        //             }
+        //         },
+        //         c if c.is_whitespace() && quote_count != 1 => {
+        //             quote_count %= 2;
+        //             if let Some(s) = buf {
+        //                 command_array.push(s);
+        //                 buf = None;
+        //             }
+        //         },
+        //         c => {
+        //             quote_count %= 2;
+        //             buf = buf.or(Some("".into()));
+        //             buf.as_mut().unwrap().push(c);
+        //         },
+        //     }
+        // }
+        // if let Some(s) = buf {
+        //     command_array.push(s);
+        // }
+        // if command_array.is_empty() {
+        //     return Err(gml::Error::FunctionError("execute_program".into(), "Cannot execute an empty string".into()))
+        // }
+        // // Actually run the program
+        // match Command::new(&command_array[0]).args(&command_array[1..]).spawn() {
+        //     Ok(mut child) => {
+        //         if wait {
+        //             // wait() closes stdin. This is inaccurate, but Rust doesn't offer an alternative.
+        //             if let Err(e) = child.wait() {
+        //                 return Err(gml::Error::FunctionError(
+        //                     "execute_program".into(),
+        //                     format!("Cannot wait for {}: {}", prog, e),
+        //                 ))
+        //             }
+        //             self.process_window_events();
+        //         }
+        //         Ok(Default::default())
+        //     },
+        //     Err(e) => {
+        //         Err(gml::Error::FunctionError("execute_program".into(), format!("Cannot execute {}: {}", prog, e)))
+        //     },
+        // }
+        Ok(Default::default())
     }
 
     pub fn execute_shell(&mut self, _args: &[Value]) -> gml::Result<Value> {
@@ -6420,12 +6465,13 @@ impl Game {
     }
 
     pub fn environment_get_variable(&self, args: &[Value]) -> gml::Result<Value> {
-        let name = expect_args!(args, [bytes])?;
-        // get environment variable
-        let env_os = std::env::var_os(self.decode_str(name.as_ref()).as_ref()).unwrap_or("".into());
-        // convert to bytes, "" if impossible
-        let env = env_os.to_str().and_then(|s| self.encode_str_maybe(s)).unwrap_or(b"".as_ref().into());
-        Ok(env.as_ref().into())
+        // let name = expect_args!(args, [bytes])?;
+        // // get environment variable
+        // let env_os = std::env::var_os(self.decode_str(name.as_ref()).as_ref()).unwrap_or("".into());
+        // // convert to bytes, "" if impossible
+        // let env = env_os.to_str().and_then(|s| self.encode_str_maybe(s)).unwrap_or(b"".as_ref().into());
+        // Ok(env.as_ref().into())
+        Ok(Default::default())
     }
 
     pub fn registry_write_string(&self, _args: &[Value]) -> gml::Result<Value> {
@@ -6484,147 +6530,157 @@ impl Game {
     }
 
     pub fn ini_open(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let name = expect_args!(args, [bytes])?;
-        let name_str = self.decode_str(name.as_ref());
-        if file::file_exists(&name_str) {
-            match ini::Ini::load_from_file(name_str.as_ref()) {
-                Ok(ini) => {
-                    self.open_ini = Some((ini, name));
-                    Ok(Default::default())
-                },
-                Err(e) => Err(gml::Error::FunctionError("ini_open".into(), format!("{}", e))),
-            }
-        } else {
-            self.open_ini = Some((ini::Ini::new(), name));
-            Ok(Default::default())
-        }
+        // let name = expect_args!(args, [bytes])?;
+        // let name_str = self.decode_str(name.as_ref());
+        // if file::file_exists(&name_str) {
+        //     match ini::Ini::load_from_file(name_str.as_ref()) {
+        //         Ok(ini) => {
+        //             self.open_ini = Some((ini, name));
+        //             Ok(Default::default())
+        //         },
+        //         Err(e) => Err(gml::Error::FunctionError("ini_open".into(), format!("{}", e))),
+        //     }
+        // } else {
+        //     self.open_ini = Some((ini::Ini::new(), name));
+        //     Ok(Default::default())
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_close(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        match self.open_ini.as_ref() {
-            Some((ini, path)) => match ini.write_to_file(self.decode_str(path.as_ref()).as_ref()) {
-                Ok(()) => {
-                    self.open_ini = None;
-                    Ok(Default::default())
-                },
-                Err(e) => Err(gml::Error::FunctionError("ini_close".into(), format!("{}", e))),
-            },
-            None => Ok(Default::default()),
-        }
+        // expect_args!(args, [])?;
+        // match self.open_ini.as_ref() {
+        //     Some((ini, path)) => match ini.write_to_file(self.decode_str(path.as_ref()).as_ref()) {
+        //         Ok(()) => {
+        //             self.open_ini = None;
+        //             Ok(Default::default())
+        //         },
+        //         Err(e) => Err(gml::Error::FunctionError("ini_close".into(), format!("{}", e))),
+        //     },
+        //     None => Ok(Default::default()),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_read_string(&self, args: &[Value]) -> gml::Result<Value> {
-        let (section, key, default) = expect_args!(args, [string, string, string])?;
-        match self.open_ini.as_ref() {
-            Some((ini, _)) => Ok(ini
-                .section(Some(section.as_ref()))
-                .and_then(|s| s.get(key))
-                .unwrap_or(default.as_ref())
-                .to_string()
-                .into()),
-            None => Err(gml::Error::FunctionError(
-                "ini_read_string".into(),
-                "Trying to read from undefined INI file".to_string(),
-            )),
-        }
+        // let (section, key, default) = expect_args!(args, [string, string, string])?;
+        // match self.open_ini.as_ref() {
+        //     Some((ini, _)) => Ok(ini
+        //         .section(Some(section.as_ref()))
+        //         .and_then(|s| s.get(key))
+        //         .unwrap_or(default.as_ref())
+        //         .to_string()
+        //         .into()),
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_read_string".into(),
+        //         "Trying to read from undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_read_real(&self, args: &[Value]) -> gml::Result<Value> {
-        let (section, key, default) = expect_args!(args, [string, string, real])?;
-        match self.open_ini.as_ref() {
-            Some((ini, _)) => match ini.section(Some(section.as_ref())).and_then(|s| s.get(key)) {
-                Some(val) => match val.parse::<f64>() {
-                    Ok(x) => Ok(x.into()),
-                    Err(_) => Ok(Default::default()),
-                },
-                None => Ok(default.into()),
-            },
-            None => Err(gml::Error::FunctionError(
-                "ini_read_real".into(),
-                "Trying to read from undefined INI file".to_string(),
-            )),
-        }
+        // let (section, key, default) = expect_args!(args, [string, string, real])?;
+        // match self.open_ini.as_ref() {
+        //     Some((ini, _)) => match ini.section(Some(section.as_ref())).and_then(|s| s.get(key)) {
+        //         Some(val) => match val.parse::<f64>() {
+        //             Ok(x) => Ok(x.into()),
+        //             Err(_) => Ok(Default::default()),
+        //         },
+        //         None => Ok(default.into()),
+        //     },
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_read_real".into(),
+        //         "Trying to read from undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_write_string(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (section, key, val) = expect_args!(args, [string, string, string])?;
-        match self.open_ini.as_mut() {
-            Some((ini, _)) => {
-                ini.with_section(Some(section.as_ref())).set(key.as_ref(), val.as_ref());
-                Ok(Default::default())
-            },
-            None => Err(gml::Error::FunctionError(
-                "ini_write_string".into(),
-                "Trying to write to undefined INI file".to_string(),
-            )),
-        }
+        // let (section, key, val) = expect_args!(args, [string, string, string])?;
+        // match self.open_ini.as_mut() {
+        //     Some((ini, _)) => {
+        //         ini.with_section(Some(section.as_ref())).set(key.as_ref(), val.as_ref());
+        //         Ok(Default::default())
+        //     },
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_write_string".into(),
+        //         "Trying to write to undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_write_real(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (section, key, val) = expect_args!(args, [string, string, real])?;
-        match self.open_ini.as_mut() {
-            Some((ini, _)) => {
-                ini.with_section(Some(section.as_ref())).set(key.as_ref(), val.to_string());
-                Ok(Default::default())
-            },
-            None => Err(gml::Error::FunctionError(
-                "ini_write_real".into(),
-                "Trying to write to undefined INI file".to_string(),
-            )),
-        }
+        // let (section, key, val) = expect_args!(args, [string, string, real])?;
+        // match self.open_ini.as_mut() {
+        //     Some((ini, _)) => {
+        //         ini.with_section(Some(section.as_ref())).set(key.as_ref(), val.to_string());
+        //         Ok(Default::default())
+        //     },
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_write_real".into(),
+        //         "Trying to write to undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_key_exists(&self, args: &[Value]) -> gml::Result<Value> {
-        let (section, key) = expect_args!(args, [string, string])?;
-        match self.open_ini.as_ref() {
-            Some((ini, _)) => {
-                Ok(ini.section(Some(section.as_ref())).map(|s| s.contains_key(key)).unwrap_or(false).into())
-            },
-            None => Err(gml::Error::FunctionError(
-                "ini_key_exists".into(),
-                "Trying to read from undefined INI file".to_string(),
-            )),
-        }
+        // let (section, key) = expect_args!(args, [string, string])?;
+        // match self.open_ini.as_ref() {
+        //     Some((ini, _)) => {
+        //         Ok(ini.section(Some(section.as_ref())).map(|s| s.contains_key(key)).unwrap_or(false).into())
+        //     },
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_key_exists".into(),
+        //         "Trying to read from undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_section_exists(&self, args: &[Value]) -> gml::Result<Value> {
-        let section = expect_args!(args, [string])?;
-        match self.open_ini.as_ref() {
-            Some((ini, _)) => Ok(ini.section(Some(section.as_ref())).is_some().into()),
-            None => Err(gml::Error::FunctionError(
-                "ini_section_exists".into(),
-                "Trying to read from undefined INI file".to_string(),
-            )),
-        }
+        // let section = expect_args!(args, [string])?;
+        // match self.open_ini.as_ref() {
+        //     Some((ini, _)) => Ok(ini.section(Some(section.as_ref())).is_some().into()),
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_section_exists".into(),
+        //         "Trying to read from undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_key_delete(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let (section, key) = expect_args!(args, [string, string])?;
-        match self.open_ini.as_mut() {
-            Some((ini, _)) => {
-                ini.delete_from(Some(section.as_ref()), key.as_ref());
-                Ok(Default::default())
-            },
-            None => Err(gml::Error::FunctionError(
-                "ini_key_delete".into(),
-                "Trying to change undefined INI file".to_string(),
-            )),
-        }
+        // let (section, key) = expect_args!(args, [string, string])?;
+        // match self.open_ini.as_mut() {
+        //     Some((ini, _)) => {
+        //         ini.delete_from(Some(section.as_ref()), key.as_ref());
+        //         Ok(Default::default())
+        //     },
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_key_delete".into(),
+        //         "Trying to change undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn ini_section_delete(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let section = expect_args!(args, [string])?;
-        match self.open_ini.as_mut() {
-            Some((ini, _)) => {
-                ini.delete(Some(section.as_ref()));
-                Ok(Default::default())
-            },
-            None => Err(gml::Error::FunctionError(
-                "ini_section_delete".into(),
-                "Trying to change undefined INI file".to_string(),
-            )),
-        }
+        // let section = expect_args!(args, [string])?;
+        // match self.open_ini.as_mut() {
+        //     Some((ini, _)) => {
+        //         ini.delete(Some(section.as_ref()));
+        //         Ok(Default::default())
+        //     },
+        //     None => Err(gml::Error::FunctionError(
+        //         "ini_section_delete".into(),
+        //         "Trying to change undefined INI file".to_string(),
+        //     )),
+        // }
+        Ok(Default::default())
     }
 
     pub fn disk_free(&self, args: &[Value]) -> gml::Result<Value> {
@@ -7242,7 +7298,7 @@ impl Game {
         if self.play_type == PlayType::Normal {
             self.input.set_keyboard_lastkey(0);
             while self.input.keyboard_lastkey() == 0 {
-                datetime::sleep(std::time::Duration::from_millis(50));
+                datetime::sleep(instant::Duration::from_millis(50));
                 self.process_window_events();
             }
         }

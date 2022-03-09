@@ -1155,11 +1155,7 @@ impl Game {
                     Ok(((nanos / 1_000_000) as u32).into())
                 } else {
                     // In realtime, it's probably more accurate to force it to increase in 16ms increments.
-                    Ok(time::SystemTime::now()
-                        .duration_since(time::UNIX_EPOCH)
-                        .map(|x| x.as_millis() as u32 & 0xFFFFFFF0)
-                        .unwrap_or(0)
-                        .into())
+                    Ok((0 as u32).into())
                 }
             },
             InstanceVariable::CurrentYear => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).year().into()),

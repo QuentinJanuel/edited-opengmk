@@ -34,7 +34,13 @@ const EXIT_FAILURE: i32 = 1;
 //     process::exit(code);
 // }
 
-pub fn run(data: &[u8]) -> i32 {
+use std::sync::Arc;
+
+pub fn run(
+    data: &[u8],
+    log: Arc<dyn Fn(&str)>,
+) -> i32 {
+    log("Initializing game");
     let spoof_time = true; // !matches.opt_present("r");
     let frame_limiter = true; // !matches.opt_present("l");
     let game_args = vec![String::new()];
@@ -48,8 +54,10 @@ pub fn run(data: &[u8]) -> i32 {
     };
     let assets = bincode::deserialize(&uncompressed[..])
         .expect("failed to deserialize assets");
+    log("Successfully loaded assets!");
     let encoding = encoding_rs::SHIFT_JIS; // TODO: argument
     let play_type = PlayType::Normal;
+    log("Lauching game...");
     let mut components =
         match Game::launch(
             assets,
@@ -59,6 +67,7 @@ pub fn run(data: &[u8]) -> i32 {
             encoding,
             frame_limiter,
             play_type,
+            Arc::clone(&log),
         ) {
             Ok(g) => g,
             Err(e) => {
@@ -66,7 +75,11 @@ pub fn run(data: &[u8]) -> i32 {
                 return EXIT_FAILURE
             },
         };
+    log("Successfully launched game!");
+    log("Getting time_now...");
     let time_now = gml::datetime::now_as_nanos();
+    log("Successfully got time_now!");
+    log("Running game loop...");
     let result = {
         components.spoofed_time_nanos = if spoof_time { Some(time_now) } else { None };
         components.run()
@@ -75,6 +88,7 @@ pub fn run(data: &[u8]) -> i32 {
         Ok(()) => EXIT_SUCCESS,
         Err(err) => {
             println!("Runtime error: {}", err);
+            log(&format!("Runtime error: {}", err));
             EXIT_FAILURE
         },
     }

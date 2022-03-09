@@ -22,6 +22,8 @@ pub use background::Background;
 // pub use savestate::SaveState;
 pub use view::View;
 
+use std::sync::Arc;
+
 use crate::{
     action::Tree,
     asset::{
@@ -66,11 +68,12 @@ use std::{
     io::Write,
     path::PathBuf,
     rc::Rc,
-    time::{Duration, Instant},
 };
+use instant::{Instant, Duration};
 
 /// Structure which contains all the components of a game.
 pub struct Game {
+    pub logger: Arc<dyn Fn(&str)>,
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
     pub binary_files: HandleArray<file::BinaryHandle, 32>,
@@ -286,6 +289,7 @@ impl Game {
         encoding: &'static Encoding,
         frame_limiter: bool,
         play_type: PlayType,
+        logger: Arc<dyn Fn(&str)>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -1173,6 +1177,7 @@ impl Game {
         renderer.push_atlases(atlases)?;
 
         let mut game = Self {
+            logger,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -1691,10 +1696,13 @@ impl Game {
                         transition(self, trans_surf_old, trans_surf_new, width as _, height as _, progress)?;
                         if self.play_type != PlayType::Record {
                             self.renderer.present(width, height, self.scaling);
-                            let diff = current_time.elapsed();
-                            if let Some(dur) = FRAME_TIME.checked_sub(diff) {
-                                gml::datetime::sleep(dur);
-                            }
+                            // let diff = current_time.elapsed();
+                            // if let Some(dur) = FRAME_TIME.checked_sub(diff) {
+                                gml::datetime::sleep(
+                                    // dur,
+                                    instant::Duration::from_millis(17),
+                                );
+                            // }
                         }
                         if let Some(t) = &mut self.spoofed_time_nanos {
                             *t += FRAME_TIME.as_nanos();
@@ -2118,28 +2126,46 @@ impl Game {
             }
 
             // frame limiter
-            let diff = Instant::now().duration_since(time_now);
-            let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
-            if let Some(t) = self.spoofed_time_nanos.as_mut() {
-                *t += duration.as_nanos();
-                self.fps = self.room.speed.into();
-            } else {
-                // gm8 just ignores any leftover time after a second has passed, so we do the same
-                if time_now.duration_since(time_last) >= Duration::from_secs(1) {
-                    time_last = time_now;
-                    self.fps = self.frame_counter;
-                    self.frame_counter = 0;
-                }
-            }
+            // let diff = Instant::now().duration_since(time_now);
+            // let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
+            // if let Some(t) = self.spoofed_time_nanos.as_mut() {
+            //     *t += duration.as_nanos();
+            //     self.fps = self.room.speed.into();
+            // } else {
+            //     // gm8 just ignores any leftover time after a second has passed, so we do the same
+            //     if time_now.duration_since(time_last) >= Duration::from_secs(1) {
+            //         time_last = time_now;
+            //         self.fps = self.frame_counter;
+            //         self.frame_counter = 0;
+            //     }
+            // }
             self.frame_counter += 1;
 
-            if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
-                gml::datetime::sleep(time);
-                time_now += duration;
-            } else {
-                time_now = Instant::now();
-            }
+            // if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
+            //     gml::datetime::sleep(time);
+            //     time_now += duration;
+            // } else {
+            //     time_now = Instant::now();
+            // }
+            self.input.button_press(input::Button::Shift as u8, true);
+            
+            self.log("tick");
+            // let instances = &self.room.instance_list;
+            // let mut iter = instances.iter_by_drawing();
+            // while let Some(instance) = iter.next(instances) {
+            //     let instance = instances.get(instance);
+            //     self.log(&format!(
+            //         "{}, {}",
+            //         instance.x.get(),
+            //         instance.y.get(),
+            //     ))
+            // }
         }
+    }
+
+    pub fn log(&self, message: &str) {
+        let logger = std::sync::Arc::clone(&self.logger);
+        logger(message);
     }
 
     // Replays some recorded inputs to the game

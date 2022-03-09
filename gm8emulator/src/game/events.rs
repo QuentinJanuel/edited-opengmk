@@ -52,7 +52,7 @@ impl Game {
             let mut object_id = original_object_id;
             if event_id == gml::ev::CREATE {
                 let obj = self.assets.objects.get_asset(object_id).unwrap();
-                println!("Created {}", obj.name);
+                self.log(&format!("Created {}", obj.name));
             }
             let event = loop {
                 if object_id < 0 {
