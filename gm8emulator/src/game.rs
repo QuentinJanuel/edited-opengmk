@@ -21,6 +21,7 @@ pub use background::Background;
 // pub use replay::Replay;
 // pub use savestate::SaveState;
 pub use view::View;
+use wasm_bindgen::JsValue;
 
 use std::sync::Arc;
 
@@ -45,7 +46,7 @@ use crate::{
     render::{atlas::AtlasBuilder, Renderer, RendererOptions, Scaling},
     tile,
     types::{Colour, ID},
-    util,
+    util, jsutils::JsWaiter,
 };
 use encoding_rs::Encoding;
 use gm8exe::asset::{
@@ -74,6 +75,11 @@ use instant::{Instant, Duration};
 /// Structure which contains all the components of a game.
 pub struct Game {
     pub logger: Arc<dyn Fn(&str)>,
+    pub waiter: JsWaiter,
+    pub on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+    pub on_pressed: Arc<dyn Fn() -> JsValue>,
+    pub on_released: Arc<dyn Fn() -> JsValue>,
+
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
     pub binary_files: HandleArray<file::BinaryHandle, 32>,
@@ -290,6 +296,10 @@ impl Game {
         frame_limiter: bool,
         play_type: PlayType,
         logger: Arc<dyn Fn(&str)>,
+        waiter: JsWaiter,
+        on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+        on_pressed: Arc<dyn Fn() -> JsValue>,
+        on_released: Arc<dyn Fn() -> JsValue>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -1178,6 +1188,10 @@ impl Game {
 
         let mut game = Self {
             logger,
+            waiter,
+            on_frame,
+            on_pressed,
+            on_released,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -1698,10 +1712,10 @@ impl Game {
                             self.renderer.present(width, height, self.scaling);
                             // let diff = current_time.elapsed();
                             // if let Some(dur) = FRAME_TIME.checked_sub(diff) {
-                                gml::datetime::sleep(
-                                    // dur,
-                                    instant::Duration::from_millis(17),
-                                );
+                                // gml::datetime::sleep(
+                                //     // dur,
+                                //     instant::Duration::from_millis(17),
+                                // );
                             // }
                         }
                         if let Some(t) = &mut self.spoofed_time_nanos {
@@ -1970,6 +1984,39 @@ impl Game {
         // self.window.swap_events();
         match self.play_type {
             PlayType::Normal => {
+                let on_pressed = Arc::clone(&self.on_pressed);
+                let on_released = Arc::clone(&self.on_released);
+                let pressed = on_pressed();
+                let released = on_released();
+                let pressed = pressed
+                    .into_serde::<Vec<String>>()
+                    .expect("Failed to deserialize pressed events");
+                let released = released
+                    .into_serde::<Vec<String>>()
+                    .expect("Failed to deserialize released events");
+                let key_to_button = |name: &str| {
+                    let button = match name {
+                        "left" => input::Button::LeftArrow,
+                        "right" => input::Button::RightArrow,
+                        "jump" => input::Button::Shift,
+                        _ => panic!("Unexpected input"),
+                    };
+                    button as u8
+                };
+                let pressed = pressed
+                    .iter()
+                    .map(|name| key_to_button(name))
+                    .collect::<Vec<_>>();
+                let released = released
+                    .iter()
+                    .map(|name| key_to_button(name))
+                    .collect::<Vec<_>>();
+                for key in pressed {
+                    self.input.button_press(key, true);
+                }
+                for key in released {
+                    self.input.button_release(key, false);
+                }
                 // for event in self.window.events() {
                 //     match event {
                 //         Event::KeyboardDown(key) => self.input.button_press(input::ramen2vk(*key), true),
@@ -2108,7 +2155,7 @@ impl Game {
     }
 
     // Plays the game normally
-    pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.init()?;
         handle_scene_change!(self);
 
@@ -2143,29 +2190,37 @@ impl Game {
 
             // if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
             //     gml::datetime::sleep(time);
+                gml::datetime::sleep(
+                    instant::Duration::from_millis(17),
+                    &self.waiter,
+                ).await;
             //     time_now += duration;
             // } else {
             //     time_now = Instant::now();
             // }
-            self.input.button_press(input::Button::Shift as u8, true);
-            
-            self.log("tick");
-            // let instances = &self.room.instance_list;
-            // let mut iter = instances.iter_by_drawing();
-            // while let Some(instance) = iter.next(instances) {
-            //     let instance = instances.get(instance);
-            //     self.log(&format!(
-            //         "{}, {}",
-            //         instance.x.get(),
-            //         instance.y.get(),
-            //     ))
-            // }
+            // self.input.button_press(input::Button::Shift as u8, true);            
+            let mut positions: Vec<(f64, f64)> = Vec::new();
+            let instances = &self.room.instance_list;
+            let mut iter = instances.iter_by_drawing();
+            while let Some(instance) = iter.next(instances) {
+                let instance = instances.get(instance);
+                positions.push((
+                    instance.x.get().into(),
+                    instance.y.get().into(),
+                ));
+            }
+            self.on_frame(positions);
         }
     }
 
     pub fn log(&self, message: &str) {
         let logger = std::sync::Arc::clone(&self.logger);
         logger(message);
+    }
+
+    pub fn on_frame(&self, data: Vec<(f64, f64)>) {
+        let on_frame = std::sync::Arc::clone(&self.on_frame);
+        on_frame(data);
     }
 
     // Replays some recorded inputs to the game

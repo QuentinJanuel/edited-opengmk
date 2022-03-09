@@ -5718,14 +5718,17 @@ impl Game {
     }
 
     pub fn sleep(&mut self, args: &[Value]) -> gml::Result<Value> {
-        let millis = expect_args!(args, [int])?;
-        if millis > 0 {
-            datetime::sleep(instant::Duration::from_millis(millis as u64));
-            if let Some(ns) = self.spoofed_time_nanos.as_mut() {
-                *ns += (millis as u128) * 1_000_000;
-            }
-            self.process_window_events();
-        }
+        // let millis = expect_args!(args, [int])?;
+        // if millis > 0 {
+        //     datetime::sleep(
+        //         instant::Duration::from_millis(millis as u64),
+        //         &self.waiter,
+        //     ).await;
+        //     if let Some(ns) = self.spoofed_time_nanos.as_mut() {
+        //         *ns += (millis as u128) * 1_000_000;
+        //     }
+        //     self.process_window_events();
+        // }
         Ok(Default::default())
     }
 
@@ -7294,14 +7297,17 @@ impl Game {
     }
 
     pub fn keyboard_wait(&mut self, args: &[Value]) -> gml::Result<Value> {
-        expect_args!(args, [])?;
-        if self.play_type == PlayType::Normal {
-            self.input.set_keyboard_lastkey(0);
-            while self.input.keyboard_lastkey() == 0 {
-                datetime::sleep(instant::Duration::from_millis(50));
-                self.process_window_events();
-            }
-        }
+        // expect_args!(args, [])?;
+        // if self.play_type == PlayType::Normal {
+        //     self.input.set_keyboard_lastkey(0);
+        //     while self.input.keyboard_lastkey() == 0 {
+        //         datetime::sleep(
+        //             instant::Duration::from_millis(50),
+        //             &self.waiter,
+        //         ).await;
+        //         self.process_window_events();
+        //     }
+        // }
         Ok(Default::default())
     }
 

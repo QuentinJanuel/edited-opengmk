@@ -1,14 +1,16 @@
 use crate::{gml::Value, math::Real};
 use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
+use crate::jsutils::JsWaiter;
 
 /// Sleep for T minus 1 millisecond, and busywait for the rest of the duration.
-pub fn sleep(dur: instant::Duration) {
+pub async fn sleep(dur: instant::Duration, waiter: &JsWaiter) {
     // TODO: find a more precise way to sleep?
     // let begin = instant::Instant::now();
     // if let Some(sleep_time) = dur.checked_sub(instant::Duration::from_millis(1)) {
     //     std::thread::sleep(sleep_time);
     // }
     // while instant::Instant::now() < begin + dur {}
+    waiter.wait(dur).await.expect("Failed to wait");
 }
 
 fn epoch() -> PrimitiveDateTime {

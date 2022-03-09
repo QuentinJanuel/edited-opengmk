@@ -50,10 +50,10 @@ impl Game {
             let original_object_id =
                 if let Some(id) = as_object { id } else { self.room.instance_list.get(instance).object_index.get() };
             let mut object_id = original_object_id;
-            if event_id == gml::ev::CREATE {
-                let obj = self.assets.objects.get_asset(object_id).unwrap();
-                self.log(&format!("Created {}", obj.name));
-            }
+            // if event_id == gml::ev::CREATE {
+            //     let obj = self.assets.objects.get_asset(object_id).unwrap();
+            //     self.log(&format!("Created {}", obj.name));
+            // }
             let event = loop {
                 if object_id < 0 {
                     if event_id == gml::ev::COLLISION {
