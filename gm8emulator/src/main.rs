@@ -21,48 +21,7 @@ const EXIT_SUCCESS: i32 = 0;
 const EXIT_FAILURE: i32 = 1;
 
 fn main() {
-    process::exit(xmain());
-}
-
-fn xmain() -> i32 {
-    let strict = false; // matches.opt_present("s");
-    let multithread = true; // !matches.opt_present("t");
-    let spoof_time = true; // !matches.opt_present("r");
-    let frame_limiter = true; // !matches.opt_present("l");
-    let game_args = vec![String::new()];
-    // #[rustfmt::skip]
-    // let assets = gm8exe::reader::from_exe(
-    //     &mut file,                              // mut exe: AsRef<[u8]>
-    //     None,
-    //     strict,                                 // strict: bool
-    //     multithread,                            // multithread: bool
-    // );
-    // let assets = match assets {
-    //     Ok(assets) => assets,
-    //     Err(err) => {
-    //         eprintln!("failed to load '{}' - {}", input, err);
-    //         return EXIT_FAILURE
-    //     },
-    // };
-    // let bin_assets = bincode::serialize(&assets).expect("failed to serialize assets");
-    // let compressed = {
-    //     let mut e = flate2::write::ZlibEncoder::new(
-    //         Vec::new(),
-    //         flate2::Compression::best(),
-    //     );
-    //     e.write_all(&bin_assets[..]).expect("failed to compress assets");
-    //     e.finish().expect("Failed to compress")
-    // };
-    // {
-    //     use std::fs::File;
-    //     let mut file = File::create("test/assets.map")
-    //         .expect("Failed to create file");
-    //     // Write a slice of bytes to the file
-    //     file.write_all(
-    //         &compressed[..],
-    //     ).expect("Failed to write bytes");
-    // }
-    let compressed = {
+    let data = {
         use std::io::prelude::*;
         let mut file = std::fs::File::open("test/assets.map")
             .expect("Failed to open file");
@@ -71,9 +30,18 @@ fn xmain() -> i32 {
             .expect("Failed to read file");
         buffer
     };
+    let code = run(&data[..]);
+    process::exit(code);
+}
+
+fn run(data: &[u8]) -> i32 {
+    let spoof_time = true; // !matches.opt_present("r");
+    let frame_limiter = true; // !matches.opt_present("l");
+    let game_args = vec![String::new()];
     let uncompressed = {
         use std::io::prelude::*;
-        let mut d = flate2::read::ZlibDecoder::new(&compressed[..]);
+        use flate2::read::ZlibDecoder;
+        let mut d = ZlibDecoder::new(data);
         let mut uncompressed = Vec::<u8>::new();
         d.read_to_end(&mut uncompressed).expect("Failed to decompress");
         uncompressed
@@ -111,3 +79,38 @@ fn xmain() -> i32 {
         },
     }
 }
+
+// let strict = false; // matches.opt_present("s");
+// let multithread = true; // !matches.opt_present("t");
+// #[rustfmt::skip]
+// let assets = gm8exe::reader::from_exe(
+//     &mut file,                              // mut exe: AsRef<[u8]>
+//     None,
+//     strict,                                 // strict: bool
+//     multithread,                            // multithread: bool
+// );
+// let assets = match assets {
+//     Ok(assets) => assets,
+//     Err(err) => {
+//         eprintln!("failed to load '{}' - {}", input, err);
+//         return EXIT_FAILURE
+//     },
+// };
+// let bin_assets = bincode::serialize(&assets).expect("failed to serialize assets");
+// let compressed = {
+//     let mut e = flate2::write::ZlibEncoder::new(
+//         Vec::new(),
+//         flate2::Compression::best(),
+//     );
+//     e.write_all(&bin_assets[..]).expect("failed to compress assets");
+//     e.finish().expect("Failed to compress")
+// };
+// {
+//     use std::fs::File;
+//     let mut file = File::create("test/assets.map")
+//         .expect("Failed to create file");
+//     // Write a slice of bytes to the file
+//     file.write_all(
+//         &compressed[..],
+//     ).expect("Failed to write bytes");
+// }
