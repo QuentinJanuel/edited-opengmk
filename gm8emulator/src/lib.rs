@@ -42,11 +42,13 @@ pub async fn run(
     data: &[u8],
     log: Arc<dyn Fn(&str)>,
     waiter: JsWaiter,
-    on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+    // on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+    ctx: web_sys::CanvasRenderingContext2d,
     on_pressed: Arc<dyn Fn() -> JsValue>,
     on_released: Arc<dyn Fn() -> JsValue>,
+    play_music: Arc<dyn Fn(JsValue)>,
 ) -> i32 {
-    let spoof_time = true; // !matches.opt_present("r");
+    let spoof_time = false; // !matches.opt_present("r");
     let frame_limiter = true; // !matches.opt_present("l");
     let game_args = vec![String::new()];
     let uncompressed = {
@@ -72,9 +74,11 @@ pub async fn run(
             play_type,
             Arc::clone(&log),
             waiter,
-            on_frame,
+            // on_frame,
+            ctx,
             on_pressed,
             on_released,
+            play_music,
         ) {
             Ok(g) => g,
             Err(e) => {

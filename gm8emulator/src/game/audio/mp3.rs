@@ -9,7 +9,7 @@ use std::{alloc, sync::Arc};
 /// - any frames with a different channel count than the first frame are skipped immediately
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Mp3Player {
-    file: Arc<[u8]>,
+    pub file: Arc<[u8]>,
     // channels: ChannelCount,
     // sample_rate: SampleRate,
     length: usize, // Pre-calculated number of samples that will actually be output by GM8

@@ -76,9 +76,11 @@ use instant::{Instant, Duration};
 pub struct Game {
     pub logger: Arc<dyn Fn(&str)>,
     pub waiter: JsWaiter,
-    pub on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+    // pub on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+    pub ctx: web_sys::CanvasRenderingContext2d,
     pub on_pressed: Arc<dyn Fn() -> JsValue>,
     pub on_released: Arc<dyn Fn() -> JsValue>,
+    pub play_music: Arc<dyn Fn(JsValue)>,
 
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
@@ -274,8 +276,8 @@ impl From<PascalString> for gml::String {
 macro_rules! handle_scene_change {
     ($self:ident) => {{
         match $self.scene_change {
-            Some(SceneChange::Room(id)) => $self.load_room(id)?,
-            Some(SceneChange::Restart) => $self.restart()?,
+            Some(SceneChange::Room(id)) => $self.load_room(id).await?,
+            Some(SceneChange::Restart) => $self.restart().await?,
             Some(SceneChange::End) => return Ok($self.run_game_end_events()?),
             Some(SceneChange::Load(ref mut path)) => {
                 let path = std::mem::take(path);
@@ -297,9 +299,11 @@ impl Game {
         play_type: PlayType,
         logger: Arc<dyn Fn(&str)>,
         waiter: JsWaiter,
-        on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+        // on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
+        ctx: web_sys::CanvasRenderingContext2d,
         on_pressed: Arc<dyn Fn() -> JsValue>,
         on_released: Arc<dyn Fn() -> JsValue>,
+        play_music: Arc<dyn Fn(JsValue)>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -581,7 +585,10 @@ impl Game {
         //     .expect("oh no");
 
         // Set up audio manager
-        let mut audio = audio::AudioManager::new(play_type != PlayType::Record);
+        let mut audio = audio::AudioManager::new(
+            play_type != PlayType::Record,
+            Arc::clone(&play_music),
+        );
 
         // TODO: specific flags here (make wb mutable)
 
@@ -1189,9 +1196,11 @@ impl Game {
         let mut game = Self {
             logger,
             waiter,
-            on_frame,
+            // on_frame,
+            ctx,
             on_pressed,
             on_released,
+            play_music,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -1467,7 +1476,7 @@ impl Game {
         }
     }
 
-    pub fn load_room(&mut self, room_id: i32) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn load_room(&mut self, room_id: i32) -> Result<(), Box<dyn std::error::Error>> {
         let (room, room_state, is_stored) = if let Some(room) = self.assets.rooms.get_asset(room_id) {
             if let Some(p) = self.stored_rooms.iter().position(|x| x.id == room_id) {
                 (room.clone(), self.stored_rooms.remove(p), true)
@@ -1709,13 +1718,13 @@ impl Game {
                         }
                         transition(self, trans_surf_old, trans_surf_new, width as _, height as _, progress)?;
                         if self.play_type != PlayType::Record {
-                            self.renderer.present(width, height, self.scaling);
+                            // self.renderer.present(width, height, self.scaling);
                             // let diff = current_time.elapsed();
                             // if let Some(dur) = FRAME_TIME.checked_sub(diff) {
-                                // gml::datetime::sleep(
-                                //     // dur,
-                                //     instant::Duration::from_millis(17),
-                                // );
+                            //     gml::datetime::sleep(
+                            //         dur,
+                            //         &self.waiter,
+                            //     ).await;
                             // }
                         }
                         if let Some(t) = &mut self.spoofed_time_nanos {
@@ -1742,7 +1751,7 @@ impl Game {
     }
 
     /// Restarts the game in the same half-baked way GM8 does, including running all relevant events.
-    pub fn restart(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn restart(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         // Room end, game end events
         self.run_game_end_events()?;
 
@@ -1754,7 +1763,7 @@ impl Game {
 
         // Go to first room
         self.room.id = self.room_order.first().copied().ok_or("Empty room order during Game::restart()")?;
-        self.init()
+        self.init().await
     }
 
     pub fn load_gm_save(&mut self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
@@ -2103,7 +2112,7 @@ impl Game {
     }
 
     /// Starts the game, loading the first room. Does not need to be called immediately before loading a savestate.
-    pub fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         // Library initialization code
         for i in 0..self.library_init_strings.len() {
             let dummy_instance = self
@@ -2131,7 +2140,7 @@ impl Game {
         }
 
         // Load first room
-        self.load_room(self.room.id)
+        self.load_room(self.room.id).await
     }
 
     /// Gets the whole String to be used as the window title, including score and lives if applicable
@@ -2156,15 +2165,41 @@ impl Game {
 
     // Plays the game normally
     pub async fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        self.init()?;
+        self.init().await?;
         handle_scene_change!(self);
-
-        let mut time_now = Instant::now();
-        let mut time_last = time_now;
+        // let mut time_now = Instant::now();
+        // let mut time_last = time_now;
         loop {
+            let time_now = Instant::now();
             self.process_window_events();
-
             self.frame()?;
+            // 
+            self.ctx.clear_rect(
+                0.0,
+                0.0,
+                800.0,
+                600.0,
+            );
+            self.ctx.set_fill_style(&JsValue::from_str("#F00"));
+            let instances = &self.room.instance_list;
+            let mut iter = instances.iter_by_drawing();
+            while let Some(instance) = iter.next(instances) {
+                let instance = instances.get(instance);
+                // let object = self
+                //     .assets
+                //     .objects
+                //     .get_asset(instance.object_index.get())
+                //     .unwrap();
+                // if &format!("{}", object.name) == "blood" {
+                //     continue;
+                // }
+                let x: f64 = instance.x.get().into();
+                let y: f64 = instance.y.get().into();
+                let size = 31f64;
+                self.ctx.fill_rect(x.round(), y.round(), size, size);
+            }
+            // self.on_frame(positions);
+            // 
             handle_scene_change!(self);
 
             // Exit if the window was closed by the user, such as by pressing 'X'
@@ -2173,8 +2208,8 @@ impl Game {
             }
 
             // frame limiter
-            // let diff = Instant::now().duration_since(time_now);
-            // let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
+            let diff = Instant::now().duration_since(time_now);
+            let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
             // if let Some(t) = self.spoofed_time_nanos.as_mut() {
             //     *t += duration.as_nanos();
             //     self.fps = self.room.speed.into();
@@ -2187,29 +2222,22 @@ impl Game {
             //     }
             // }
             self.frame_counter += 1;
-
             // if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
-            //     gml::datetime::sleep(time);
+            if let Some(time) = duration.checked_sub(diff) {
                 gml::datetime::sleep(
-                    instant::Duration::from_millis(17),
+                    time,
                     &self.waiter,
                 ).await;
-            //     time_now += duration;
-            // } else {
-            //     time_now = Instant::now();
-            // }
-            // self.input.button_press(input::Button::Shift as u8, true);            
-            let mut positions: Vec<(f64, f64)> = Vec::new();
-            let instances = &self.room.instance_list;
-            let mut iter = instances.iter_by_drawing();
-            while let Some(instance) = iter.next(instances) {
-                let instance = instances.get(instance);
-                positions.push((
-                    instance.x.get().into(),
-                    instance.y.get().into(),
-                ));
+            } else {
+                gml::datetime::sleep(
+                    Duration::from_nanos(1),
+                    &self.waiter,
+                ).await;
             }
-            self.on_frame(positions);
+            // time_now += duration;
+            // } else {
+            // time_now = Instant::now();
+            // }
         }
     }
 
@@ -2217,108 +2245,6 @@ impl Game {
         let logger = std::sync::Arc::clone(&self.logger);
         logger(message);
     }
-
-    pub fn on_frame(&self, data: Vec<(f64, f64)>) {
-        let on_frame = std::sync::Arc::clone(&self.on_frame);
-        on_frame(data);
-    }
-
-    // Replays some recorded inputs to the game
-    // pub fn replay(mut self, replay: Replay, output_bin: Option<PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
-    //     let mut frame_count: usize = 0;
-    //     self.rand.set_seed(replay.start_seed);
-    //     self.spoofed_time_nanos = Some(replay.start_time);
-
-    //     // the tas ui creates some sprites, so as a hotfix we need to generate them here too
-    //     // TODO don't
-    //     for _ in 0..2 {
-    //         self.renderer.upload_sprite(Box::new([0, 0, 0, 0]), 1, 1, 0, 0).expect("Failed to upload blank sprite");
-    //     }
-
-    //     for ev in replay.startup_events.iter() {
-    //         self.stored_events.push_back(ev.clone());
-    //     }
-    //     self.init()?;
-    //     handle_scene_change!(self);
-
-    //     let mut time_now = Instant::now();
-    //     loop {
-    //         // self.window.swap_events();
-    //         self.input.mouse_step();
-    //         if let Some(frame) = replay.get_frame(frame_count) {
-    //             if !self.stored_events.is_empty() {
-    //                 return Err(format!(
-    //                     "ERROR: {} stored events remaining at beginning of frame {}; aborting",
-    //                     self.stored_events.len(),
-    //                     frame_count,
-    //                 )
-    //                 .into())
-    //             }
-
-    //             for ev in frame.events.iter() {
-    //                 self.stored_events.push_back(ev.clone());
-    //             }
-
-    //             if let Some(seed) = frame.new_seed {
-    //                 self.rand.set_seed(seed);
-    //             }
-
-    //             if let Some(time) = frame.new_time {
-    //                 self.spoofed_time_nanos = Some(time);
-    //             }
-
-    //             self.input.mouse_move_to((frame.mouse_x as i32, frame.mouse_y as i32));
-    //             for ev in frame.inputs.iter() {
-    //                 match ev {
-    //                     replay::Input::KeyPress(v) => self.input.button_press(*v as u8, true),
-    //                     replay::Input::KeyRelease(v) => self.input.button_release(*v as u8, true),
-    //                     replay::Input::MousePress(b) => self.input.mouse_press(*b as i8, true),
-    //                     replay::Input::MouseRelease(b) => self.input.mouse_release(*b as i8, true),
-    //                     replay::Input::MouseWheelUp => self.input.mouse_scroll_up(),
-    //                     replay::Input::MouseWheelDown => self.input.mouse_scroll_down(),
-    //                 }
-    //             }
-    //         } else if let Some(bin) = &output_bin {
-    //             let render_state = self.renderer.state();
-    //             match SaveState::from(&mut self, replay.clone(), render_state)
-    //                 .save_to_file(bin, &mut savestate::Buffer::new())
-    //             {
-    //                 Ok(()) => break Ok(()),
-    //                 Err(e) => break Err(format!("Error saving to {:?}: {:?}", output_bin, e).into()),
-    //             }
-    //         }
-
-    //         self.frame()?;
-    //         handle_scene_change!(self);
-
-    //         // exit if X pressed or game_end() invoked
-    //         if self.close_requested {
-    //             break Ok(self.run_game_end_events()?)
-    //         }
-
-    //         // frame limiter
-    //         let diff = Instant::now().duration_since(time_now);
-    //         let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
-    //         if let Some(t) = self.spoofed_time_nanos.as_mut() {
-    //             *t += duration.as_nanos();
-    //         }
-
-    //         if self.frame_counter == self.room.speed {
-    //             self.fps = self.room.speed;
-    //             self.frame_counter = 0;
-    //         }
-    //         self.frame_counter += 1;
-
-    //         if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
-    //             gml::datetime::sleep(time);
-    //             time_now += duration;
-    //         } else {
-    //             time_now = Instant::now();
-    //         }
-
-    //         frame_count += 1;
-    //     }
-    // }
 
     // Gets the mouse position in room coordinates
     pub fn get_mouse_in_room(&self) -> (i32, i32) {

@@ -17,6 +17,9 @@ rust-version = "1.59"
 js-sys = "0.3.56"
 wasm-bindgen-futures = "0.4.29"
 wasm-bindgen = { version = "0.2.63", features = ["serde-serialize"] } 
+web-sys = { version = "0.3.56", features = [
+    "CanvasRenderingContext2d",
+] }
 instant = { version = "0.1.12", features = [ "wasm-bindgen" ] }
 bincode = "1.2"
 flate2 = { version = "1.0" }
