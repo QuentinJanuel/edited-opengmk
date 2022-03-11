@@ -10,14 +10,14 @@ use std::{
         Arc,
     },
 };
-// use udon::{
-//     cycle::Cycle,
-//     rechanneler::Rechanneler,
-//     resampler::Resampler,
-//     session::{Api, Session},
-//     source::{ChannelCount, SampleRate, Source},
-//     wav::WavPlayer,
-// };
+use udon::{
+    cycle::Cycle,
+    rechanneler::Rechanneler,
+    resampler::Resampler,
+    session::{Api, Session},
+    source::{ChannelCount, SampleRate, Source},
+    wav::WavPlayer,
+};
 
 use self::{
     mixer::{Mixer, MixerHandle},
@@ -32,7 +32,7 @@ pub struct Mp3Handle {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WavHandle {
-    // player: WavPlayer,
+    player: WavPlayer,
     params: Arc<SoundParams>,
     _use_3d: bool,
     exclusive: bool,
@@ -53,13 +53,17 @@ pub struct AudioManager {
     global_volume: Arc<AtomicU32>,
     end_times: HashMap<i32, Option<u128>>,
     multimedia_end: Option<(i32, Option<u128>)>,
-    play_music: Arc<dyn Fn(JsValue)>,
+    play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+    stop_music: Arc<dyn Fn(i32)>,
+    stop_all: Arc<dyn Fn()>,
 }
 
 impl AudioManager {
     pub fn new(
         do_output: bool,
-        play_music: Arc<dyn Fn(JsValue)>,
+        play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+        stop_music: Arc<dyn Fn(i32)>,
+        stop_all: Arc<dyn Fn()>,
     ) -> Self {
         // TODO: not all these unwraps
         // let session = Session::new(Api::Wasapi).unwrap();
@@ -83,12 +87,13 @@ impl AudioManager {
             end_times: HashMap::new(),
             multimedia_end: None,
             play_music,
+            stop_music,
+            stop_all,
         }
     }
 
     pub fn add_mp3(&mut self, file: Box<[u8]>, sound_id: i32) -> Option<Mp3Handle> {
-        None
-        // Mp3Player::new(file).map(|player| Mp3Handle { player, id: sound_id }).ok()
+        Mp3Player::new(file).map(|player| Mp3Handle { player, id: sound_id }).ok()
     }
 
     pub fn add_wav(
@@ -99,23 +104,24 @@ impl AudioManager {
         use_3d: bool,
         exclusive: bool,
     ) -> Option<WavHandle> {
-        None
-        // WavPlayer::new(file)
-        //     .map(|player| WavHandle {
-        //         player,
-        //         params: Arc::new(SoundParams { volume: AtomicU32::new(make_volume(volume).to_bits()) }),
-        //         _use_3d: use_3d,
-        //         exclusive,
-        //         id: sound_id,
-        //     })
-        //     .ok()
+        WavPlayer::new(file)
+            .map(|player| WavHandle {
+                player,
+                params: Arc::new(SoundParams { volume: AtomicU32::new(make_volume(volume).to_bits()) }),
+                _use_3d: use_3d,
+                exclusive,
+                id: sound_id,
+            })
+            .ok()
     }
 
     pub fn play_mp3(&mut self, handle: &Mp3Handle, start_time: u128) {
         let play_music = Arc::clone(&self.play_music);
+        let id = JsValue::from(handle.id);
         let val = JsValue::from_serde(&handle.player.file)
             .expect("Failed to serialize mp3 file");
-        play_music(val);
+        let looping = JsValue::from(false);
+        play_music(id, val, looping);
         // let end_time = length_to_ns(
         //     handle.player.length(),
         //     handle.player.sample_rate().into(),
@@ -134,11 +140,11 @@ impl AudioManager {
     }
 
     pub fn play_wav(&mut self, handle: &WavHandle, start_time: u128) {
-        let play_music = Arc::clone(&self.play_music);
-        // let val = JsValue::from_serde(&handle.player.file)
-            // .expect("Failed to serialize mp3 file");
-        let val = JsValue::from(0i32);
-        play_music(val);
+        // let play_music = Arc::clone(&self.play_music);
+        // // let val = JsValue::from_serde(&handle.player.file)
+        //     // .expect("Failed to serialize mp3 file");
+        // let val = JsValue::from(0i32);
+        // play_music(val);
         // let end_time = length_to_ns(
         //     handle.player.length(),
         //     handle.player.sample_rate().into(),
@@ -174,9 +180,11 @@ impl AudioManager {
 
     pub fn loop_mp3(&mut self, handle: &Mp3Handle) {
         let play_music = Arc::clone(&self.play_music);
+        let id = JsValue::from(handle.id);
         let val = JsValue::from_serde(&handle.player.file)
             .expect("Failed to serialize mp3 file");
-        play_music(val);
+        let looping = JsValue::from(true);
+        play_music(id, val, looping);
         // self.multimedia_end = Some((handle.id, None));
         // if self.do_output {
         //     let _ = self.mixer_handle.add_exclusive(
@@ -190,11 +198,11 @@ impl AudioManager {
     }
 
     pub fn loop_wav(&mut self, handle: &WavHandle) {
-        let play_music = Arc::clone(&self.play_music);
-        // let val = JsValue::from_serde(&handle.player.file)
-            // .expect("Failed to serialize mp3 file");
-        let val = JsValue::from(0i32);
-        play_music(val);
+        // let play_music = Arc::clone(&self.play_music);
+        // // let val = JsValue::from_serde(&handle.player.file)
+        //     // .expect("Failed to serialize mp3 file");
+        // let val = JsValue::from(0i32);
+        // play_music(val);
         // if handle.exclusive {
         //     self.multimedia_end = Some((handle.id, None));
         // } else {
@@ -224,6 +232,8 @@ impl AudioManager {
     }
 
     pub fn stop_sound(&mut self, id: i32) {
+        let stop_music = Arc::clone(&self.stop_music);
+        stop_music(id);
         // self.end_times.remove(&id);
         // if self.multimedia_end.map(|(x, _)| x) == Some(id) {
         //     self.multimedia_end = None;
@@ -234,6 +244,8 @@ impl AudioManager {
     }
 
     pub fn stop_all(&mut self) {
+        let stop_all = Arc::clone(&self.stop_all);
+        stop_all();
         // self.end_times.clear();
         // self.multimedia_end = None;
         // if self.do_output {

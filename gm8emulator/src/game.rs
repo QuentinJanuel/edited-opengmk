@@ -80,7 +80,9 @@ pub struct Game {
     pub ctx: web_sys::CanvasRenderingContext2d,
     pub on_pressed: Arc<dyn Fn() -> JsValue>,
     pub on_released: Arc<dyn Fn() -> JsValue>,
-    pub play_music: Arc<dyn Fn(JsValue)>,
+    pub play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+    pub stop_music: Arc<dyn Fn(i32)>,
+    pub stop_all: Arc<dyn Fn()>,
 
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
@@ -303,7 +305,9 @@ impl Game {
         ctx: web_sys::CanvasRenderingContext2d,
         on_pressed: Arc<dyn Fn() -> JsValue>,
         on_released: Arc<dyn Fn() -> JsValue>,
-        play_music: Arc<dyn Fn(JsValue)>,
+        play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+        stop_music: Arc<dyn Fn(i32)>,
+        stop_all: Arc<dyn Fn()>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -588,6 +592,8 @@ impl Game {
         let mut audio = audio::AudioManager::new(
             play_type != PlayType::Record,
             Arc::clone(&play_music),
+            Arc::clone(&stop_music),
+            Arc::clone(&stop_all),
         );
 
         // TODO: specific flags here (make wb mutable)
@@ -1201,6 +1207,8 @@ impl Game {
             on_pressed,
             on_released,
             play_music,
+            stop_music,
+            stop_all,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -2167,10 +2175,9 @@ impl Game {
     pub async fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.init().await?;
         handle_scene_change!(self);
-        // let mut time_now = Instant::now();
-        // let mut time_last = time_now;
+        let mut time_now = Instant::now();
+        let mut time_last = time_now;
         loop {
-            let time_now = Instant::now();
             self.process_window_events();
             self.frame()?;
             // 
@@ -2183,6 +2190,12 @@ impl Game {
             self.ctx.set_fill_style(&JsValue::from_str("#F00"));
             let instances = &self.room.instance_list;
             let mut iter = instances.iter_by_drawing();
+            // for view in self.room.views {
+            //     if !view.visible {
+            //         continue;
+            //     }
+            //     // let x = view.
+            // }
             while let Some(instance) = iter.next(instances) {
                 let instance = instances.get(instance);
                 // let object = self
@@ -2198,7 +2211,6 @@ impl Game {
                 let size = 31f64;
                 self.ctx.fill_rect(x.round(), y.round(), size, size);
             }
-            // self.on_frame(positions);
             // 
             handle_scene_change!(self);
 
@@ -2210,34 +2222,26 @@ impl Game {
             // frame limiter
             let diff = Instant::now().duration_since(time_now);
             let duration = Duration::new(0, 1_000_000_000u32 / self.room.speed);
-            // if let Some(t) = self.spoofed_time_nanos.as_mut() {
-            //     *t += duration.as_nanos();
-            //     self.fps = self.room.speed.into();
-            // } else {
-            //     // gm8 just ignores any leftover time after a second has passed, so we do the same
-            //     if time_now.duration_since(time_last) >= Duration::from_secs(1) {
-            //         time_last = time_now;
-            //         self.fps = self.frame_counter;
-            //         self.frame_counter = 0;
-            //     }
-            // }
+            // gm8 just ignores any leftover time after a second has passed, so we do the same
+            if time_now.duration_since(time_last) >= Duration::from_secs(1) {
+                time_last = time_now;
+                self.fps = self.frame_counter;
+                self.frame_counter = 0;
+            }
             self.frame_counter += 1;
-            // if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
-            if let Some(time) = duration.checked_sub(diff) {
+            if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
                 gml::datetime::sleep(
                     time,
                     &self.waiter,
                 ).await;
+                time_now += duration;
             } else {
                 gml::datetime::sleep(
-                    Duration::from_nanos(1),
+                    Duration::from_nanos(0),
                     &self.waiter,
                 ).await;
+                time_now = Instant::now();
             }
-            // time_now += duration;
-            // } else {
-            // time_now = Instant::now();
-            // }
         }
     }
 

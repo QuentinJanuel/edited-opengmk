@@ -5,12 +5,16 @@ use crate::jsutils::JsWaiter;
 /// Sleep for T minus 1 millisecond, and busywait for the rest of the duration.
 pub async fn sleep(dur: instant::Duration, waiter: &JsWaiter) {
     // TODO: find a more precise way to sleep?
-    // let begin = instant::Instant::now();
-    // if let Some(sleep_time) = dur.checked_sub(instant::Duration::from_millis(1)) {
-    //     std::thread::sleep(sleep_time);
-    // }
-    // while instant::Instant::now() < begin + dur {}
-    waiter.wait(dur).await.expect("Failed to wait");
+    let begin = instant::Instant::now();
+    let fut = if let Some(sleep_time) = dur.checked_sub(instant::Duration::from_millis(1)) {
+        // std::thread::sleep(sleep_time);
+        waiter.wait(sleep_time)
+    } else {
+        waiter.wait(instant::Duration::from_secs(0))
+    };
+    fut.await.expect("Failed to sleep");
+    while instant::Instant::now() < begin + dur {}
+    // waiter.wait(dur).await.expect("Failed to sleep");
 }
 
 fn epoch() -> PrimitiveDateTime {

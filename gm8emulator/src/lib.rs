@@ -46,7 +46,9 @@ pub async fn run(
     ctx: web_sys::CanvasRenderingContext2d,
     on_pressed: Arc<dyn Fn() -> JsValue>,
     on_released: Arc<dyn Fn() -> JsValue>,
-    play_music: Arc<dyn Fn(JsValue)>,
+    play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+    stop_music: Arc<dyn Fn(i32)>,
+    stop_all: Arc<dyn Fn()>,
 ) -> i32 {
     let spoof_time = false; // !matches.opt_present("r");
     let frame_limiter = true; // !matches.opt_present("l");
@@ -79,6 +81,8 @@ pub async fn run(
             on_pressed,
             on_released,
             play_music,
+            stop_music,
+            stop_all,
         ) {
             Ok(g) => g,
             Err(e) => {
