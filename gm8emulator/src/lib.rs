@@ -46,10 +46,7 @@ pub async fn run(
     ctx: web_sys::CanvasRenderingContext2d,
     on_pressed: Arc<dyn Fn() -> JsValue>,
     on_released: Arc<dyn Fn() -> JsValue>,
-    load_musics: Arc<dyn Fn(Vec<(i32, Arc<[u8]>)>) -> Pin<Box<JsFuture>>>,
-    play_music: Arc<dyn Fn(i32, bool)>,
-    stop_music: Arc<dyn Fn(i32)>,
-    stop_all: Arc<dyn Fn()>,
+    js_audio: Arc<dyn jsutils::Audio>,
 ) -> i32 {
     let spoof_time = false; // !matches.opt_present("r");
     let frame_limiter = true; // !matches.opt_present("l");
@@ -80,10 +77,7 @@ pub async fn run(
             ctx,
             on_pressed,
             on_released,
-            load_musics,
-            play_music,
-            stop_music,
-            stop_all,
+            js_audio,
         ).await {
             Ok(g) => g,
             Err(e) => {

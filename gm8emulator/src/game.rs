@@ -81,9 +81,7 @@ pub struct Game {
     pub ctx: web_sys::CanvasRenderingContext2d,
     pub on_pressed: Arc<dyn Fn() -> JsValue>,
     pub on_released: Arc<dyn Fn() -> JsValue>,
-    pub play_music: Arc<dyn Fn(i32, bool)>,
-    pub stop_music: Arc<dyn Fn(i32)>,
-    pub stop_all: Arc<dyn Fn()>,
+    pub js_audio: Arc<dyn crate::jsutils::Audio>,
 
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
@@ -306,10 +304,7 @@ impl Game {
         ctx: web_sys::CanvasRenderingContext2d,
         on_pressed: Arc<dyn Fn() -> JsValue>,
         on_released: Arc<dyn Fn() -> JsValue>,
-        load_musics: Arc<dyn Fn(Vec<(i32, Arc<[u8]>)>) -> Pin<Box<JsFuture>>>,
-        play_music: Arc<dyn Fn(i32, bool)>,
-        stop_music: Arc<dyn Fn(i32)>,
-        stop_all: Arc<dyn Fn()>,
+        js_audio: Arc<dyn crate::jsutils::Audio>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -593,9 +588,7 @@ impl Game {
         // Set up audio manager
         let mut audio = audio::AudioManager::new(
             play_type != PlayType::Record,
-            Arc::clone(&play_music),
-            Arc::clone(&stop_music),
-            Arc::clone(&stop_all),
+            Arc::clone(&js_audio),
         );
 
         // TODO: specific flags here (make wb mutable)
@@ -1208,9 +1201,7 @@ impl Game {
             ctx,
             on_pressed,
             on_released,
-            play_music,
-            stop_music,
-            stop_all,
+            js_audio,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -1368,7 +1359,7 @@ impl Game {
         // game.window.set_visible(true);
 
         // Load musics
-        let musics = game
+        let sounds = game
             .assets
             .sounds
             .iter()
@@ -1379,11 +1370,17 @@ impl Game {
                         match &sound.handle {
                             asset::sound::FileType::Mp3(handle) => {
                                 let data = &handle.player.file;
-                                Some((handle.id, Arc::clone(data)))
+                                Some(crate::jsutils::Sound {
+                                    id: handle.id,
+                                    data: Arc::clone(data),
+                                })
                             },
                             asset::sound::FileType::Wav(handle) => {
                                 let data = &handle.file;
-                                Some((handle.id, Arc::clone(data)))
+                                Some(crate::jsutils::Sound {
+                                    id: handle.id,
+                                    data: Arc::clone(data),
+                                })
                             },
                             _ => None,
                         }
@@ -1391,7 +1388,7 @@ impl Game {
                     .flatten()
             })
             .collect::<Vec<_>>();
-        load_musics(musics).await;
+        game.js_audio.load(sounds).await;
         // 
 
         Ok(game)
