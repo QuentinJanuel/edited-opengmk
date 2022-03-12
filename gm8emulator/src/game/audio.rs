@@ -26,8 +26,8 @@ use self::{
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Mp3Handle {
-    player: Mp3Player,
-    id: i32,
+    pub player: Mp3Player,
+    pub id: i32,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -36,7 +36,8 @@ pub struct WavHandle {
     params: Arc<SoundParams>,
     _use_3d: bool,
     exclusive: bool,
-    id: i32,
+    pub id: i32,
+    pub file: Arc<[u8]>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -53,7 +54,7 @@ pub struct AudioManager {
     global_volume: Arc<AtomicU32>,
     end_times: HashMap<i32, Option<u128>>,
     multimedia_end: Option<(i32, Option<u128>)>,
-    play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+    play_music: Arc<dyn Fn(i32, bool)>,
     stop_music: Arc<dyn Fn(i32)>,
     stop_all: Arc<dyn Fn()>,
 }
@@ -61,7 +62,7 @@ pub struct AudioManager {
 impl AudioManager {
     pub fn new(
         do_output: bool,
-        play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+        play_music: Arc<dyn Fn(i32, bool)>,
         stop_music: Arc<dyn Fn(i32)>,
         stop_all: Arc<dyn Fn()>,
     ) -> Self {
@@ -104,24 +105,23 @@ impl AudioManager {
         use_3d: bool,
         exclusive: bool,
     ) -> Option<WavHandle> {
-        WavPlayer::new(file)
+        WavPlayer::new(file.clone())
             .map(|player| WavHandle {
                 player,
                 params: Arc::new(SoundParams { volume: AtomicU32::new(make_volume(volume).to_bits()) }),
                 _use_3d: use_3d,
                 exclusive,
                 id: sound_id,
+                file: file.into(),
             })
             .ok()
     }
 
     pub fn play_mp3(&mut self, handle: &Mp3Handle, start_time: u128) {
         let play_music = Arc::clone(&self.play_music);
-        let id = JsValue::from(handle.id);
-        let val = JsValue::from_serde(&handle.player.file)
-            .expect("Failed to serialize mp3 file");
-        let looping = JsValue::from(false);
-        play_music(id, val, looping);
+        // let val = JsValue::from_serde(&handle.player.file)
+        //     .expect("Failed to serialize mp3 file");
+        play_music(handle.id, false);
         // let end_time = length_to_ns(
         //     handle.player.length(),
         //     handle.player.sample_rate().into(),
@@ -140,11 +140,10 @@ impl AudioManager {
     }
 
     pub fn play_wav(&mut self, handle: &WavHandle, start_time: u128) {
-        // let play_music = Arc::clone(&self.play_music);
-        // // let val = JsValue::from_serde(&handle.player.file)
-        //     // .expect("Failed to serialize mp3 file");
-        // let val = JsValue::from(0i32);
-        // play_music(val);
+        let play_music = Arc::clone(&self.play_music);
+        // let val = JsValue::from_serde(&handle.file)
+        //     .expect("Failed to serialize mp3 file");
+        play_music(handle.id, false);
         // let end_time = length_to_ns(
         //     handle.player.length(),
         //     handle.player.sample_rate().into(),
@@ -180,11 +179,9 @@ impl AudioManager {
 
     pub fn loop_mp3(&mut self, handle: &Mp3Handle) {
         let play_music = Arc::clone(&self.play_music);
-        let id = JsValue::from(handle.id);
-        let val = JsValue::from_serde(&handle.player.file)
-            .expect("Failed to serialize mp3 file");
-        let looping = JsValue::from(true);
-        play_music(id, val, looping);
+        // let val = JsValue::from_serde(&handle.player.file)
+        //     .expect("Failed to serialize mp3 file");
+        play_music(handle.id, true);
         // self.multimedia_end = Some((handle.id, None));
         // if self.do_output {
         //     let _ = self.mixer_handle.add_exclusive(
@@ -198,11 +195,10 @@ impl AudioManager {
     }
 
     pub fn loop_wav(&mut self, handle: &WavHandle) {
-        // let play_music = Arc::clone(&self.play_music);
-        // // let val = JsValue::from_serde(&handle.player.file)
-        //     // .expect("Failed to serialize mp3 file");
-        // let val = JsValue::from(0i32);
-        // play_music(val);
+        let play_music = Arc::clone(&self.play_music);
+        // let val = JsValue::from_serde(&handle.file)
+        //     .expect("Failed to serialize mp3 file");
+        play_music(handle.id, true);
         // if handle.exclusive {
         //     self.multimedia_end = Some((handle.id, None));
         // } else {

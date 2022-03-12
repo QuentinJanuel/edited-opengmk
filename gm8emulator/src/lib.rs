@@ -18,6 +18,7 @@ use game::{
 };
 use jsutils::JsWaiter;
 use wasm_bindgen::JsValue;
+use wasm_bindgen_futures::JsFuture;
 
 const EXIT_SUCCESS: i32 = 0;
 const EXIT_FAILURE: i32 = 1;
@@ -36,17 +37,17 @@ const EXIT_FAILURE: i32 = 1;
 //     process::exit(code);
 // }
 
-use std::sync::Arc;
+use std::{sync::Arc, future::Future, pin::Pin};
 
 pub async fn run(
     data: &[u8],
     log: Arc<dyn Fn(&str)>,
     waiter: JsWaiter,
-    // on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
     ctx: web_sys::CanvasRenderingContext2d,
     on_pressed: Arc<dyn Fn() -> JsValue>,
     on_released: Arc<dyn Fn() -> JsValue>,
-    play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+    load_musics: Arc<dyn Fn(Vec<(i32, Arc<[u8]>)>) -> Pin<Box<JsFuture>>>,
+    play_music: Arc<dyn Fn(i32, bool)>,
     stop_music: Arc<dyn Fn(i32)>,
     stop_all: Arc<dyn Fn()>,
 ) -> i32 {
@@ -76,14 +77,14 @@ pub async fn run(
             play_type,
             Arc::clone(&log),
             waiter,
-            // on_frame,
             ctx,
             on_pressed,
             on_released,
+            load_musics,
             play_music,
             stop_music,
             stop_all,
-        ) {
+        ).await {
             Ok(g) => g,
             Err(e) => {
                 eprintln!("Failed to launch game: {}", e);

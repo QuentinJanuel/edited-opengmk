@@ -22,8 +22,9 @@ pub use background::Background;
 // pub use savestate::SaveState;
 pub use view::View;
 use wasm_bindgen::JsValue;
+use wasm_bindgen_futures::JsFuture;
 
-use std::sync::Arc;
+use std::{sync::Arc, future::Future, pin::Pin};
 
 use crate::{
     action::Tree,
@@ -80,7 +81,7 @@ pub struct Game {
     pub ctx: web_sys::CanvasRenderingContext2d,
     pub on_pressed: Arc<dyn Fn() -> JsValue>,
     pub on_released: Arc<dyn Fn() -> JsValue>,
-    pub play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+    pub play_music: Arc<dyn Fn(i32, bool)>,
     pub stop_music: Arc<dyn Fn(i32)>,
     pub stop_all: Arc<dyn Fn()>,
 
@@ -291,7 +292,7 @@ macro_rules! handle_scene_change {
 }
 
 impl Game {
-    pub fn launch(
+    pub async fn launch(
         assets: gm8exe::GameAssets,
         // file_path: PathBuf,
         game_arguments: Vec<String>,
@@ -305,7 +306,8 @@ impl Game {
         ctx: web_sys::CanvasRenderingContext2d,
         on_pressed: Arc<dyn Fn() -> JsValue>,
         on_released: Arc<dyn Fn() -> JsValue>,
-        play_music: Arc<dyn Fn(JsValue, JsValue, JsValue)>,
+        load_musics: Arc<dyn Fn(Vec<(i32, Arc<[u8]>)>) -> Pin<Box<JsFuture>>>,
+        play_music: Arc<dyn Fn(i32, bool)>,
         stop_music: Arc<dyn Fn(i32)>,
         stop_all: Arc<dyn Fn()>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
@@ -1365,6 +1367,33 @@ impl Game {
 
         // game.window.set_visible(true);
 
+        // Load musics
+        let musics = game
+            .assets
+            .sounds
+            .iter()
+            .filter_map(|sound| {
+                sound
+                    .as_ref()
+                    .map(|sound| {
+                        match &sound.handle {
+                            asset::sound::FileType::Mp3(handle) => {
+                                let data = &handle.player.file;
+                                Some((handle.id, Arc::clone(data)))
+                            },
+                            asset::sound::FileType::Wav(handle) => {
+                                let data = &handle.file;
+                                Some((handle.id, Arc::clone(data)))
+                            },
+                            _ => None,
+                        }
+                    })
+                    .flatten()
+            })
+            .collect::<Vec<_>>();
+        load_musics(musics).await;
+        // 
+
         Ok(game)
     }
 
@@ -1727,13 +1756,13 @@ impl Game {
                         transition(self, trans_surf_old, trans_surf_new, width as _, height as _, progress)?;
                         if self.play_type != PlayType::Record {
                             // self.renderer.present(width, height, self.scaling);
-                            // let diff = current_time.elapsed();
-                            // if let Some(dur) = FRAME_TIME.checked_sub(diff) {
-                            //     gml::datetime::sleep(
-                            //         dur,
-                            //         &self.waiter,
-                            //     ).await;
-                            // }
+                            let diff = current_time.elapsed();
+                            if let Some(dur) = FRAME_TIME.checked_sub(diff) {
+                                gml::datetime::sleep(
+                                    dur,
+                                    &self.waiter,
+                                ).await;
+                            }
                         }
                         if let Some(t) = &mut self.spoofed_time_nanos {
                             *t += FRAME_TIME.as_nanos();
