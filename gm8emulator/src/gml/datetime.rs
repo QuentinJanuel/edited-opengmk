@@ -1,38 +1,37 @@
 use crate::{gml::Value, math::Real};
-use instant::SystemTime;
-use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
-use crate::jsutils::JsWaiter;
+use time::{
+    OffsetDateTime,
+    PrimitiveDateTime,
+    // UtcOffset,
+};
+use std::sync::Arc;
 
 /// Sleep for T minus 1 millisecond, and busywait for the rest of the duration.
-pub async fn sleep(dur: instant::Duration, waiter: &JsWaiter) {
+pub async fn sleep(
+    dur: instant::Duration,
+    js_time: Arc<dyn crate::jsutils::Time>,
+) {
     // TODO: find a more precise way to sleep?
     let begin = instant::Instant::now();
-    let fut = if let Some(sleep_time) = dur.checked_sub(instant::Duration::from_millis(1)) {
-        // std::thread::sleep(sleep_time);
-        waiter.wait(sleep_time)
-    } else {
-        waiter.wait(instant::Duration::from_secs(0))
-    };
-    fut.await.expect("Failed to sleep");
-    while instant::Instant::now() < begin + dur {}
-    // waiter.wait(dur).await.expect("Failed to sleep");
+    let sleep_time = dur.checked_sub(instant::Duration::from_millis(1))
+        .unwrap_or(instant::Duration::from_secs(0));
+    js_time.wait(sleep_time).await;
+    while instant::Instant::now() <= begin + dur {}
 }
 
 fn epoch() -> PrimitiveDateTime {
     time::macros::date!(1899 - 12 - 30).midnight()
 }
 
-fn now() -> OffsetDateTime {
-    // instant::Instant::now()
-    let now = js_sys::Date::now() as u128;
-    let now_as_nanos = now * 1_000_000;
-    OffsetDateTime::from_unix_timestamp_nanos(now_as_nanos as i128)
+fn now(js_time: Arc<dyn crate::jsutils::Time>) -> OffsetDateTime {
+    let timestamp = js_time.now_as_timestamp_nanos() as i128;
+    OffsetDateTime::from_unix_timestamp_nanos(timestamp)
         .expect("Failed to convert to OffsetDateTime")
         // + time::Duration::seconds(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC).whole_seconds().into())
 }
 
-pub fn now_as_nanos() -> u128 {
-    let datetime = now();
+pub fn now_as_nanos(js_time: Arc<dyn crate::jsutils::Time>) -> u128 {
+    let datetime = now(js_time);
     datetime.unix_timestamp_nanos().try_into().unwrap_or(0)
 }
 
@@ -58,7 +57,7 @@ fn i32_to_month(m: i32) -> Option<time::Month> {
 pub struct DateTime(PrimitiveDateTime);
 
 impl DateTime {
-    pub fn now_or_nanos(nanos: Option<u128>) -> Self {
+    pub fn now_or_nanos(nanos: Option<u128>, js_time: Arc<dyn crate::jsutils::Time>) -> Self {
         Self(match nanos {
             Some(nanos) => {
                 // manual unix timestamp because we need a PrimitiveDateTime
@@ -68,7 +67,7 @@ impl DateTime {
                     + time::Duration::nanoseconds((nanos % 1_000_000_000) as _)
             },
             None => {
-                let dt = now();
+                let dt = now(js_time);
                 dt.date().with_time(dt.time())
                 // PrimitiveDateTime::new(
                     // time::Date::MIN,

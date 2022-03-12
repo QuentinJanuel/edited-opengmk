@@ -1,28 +1,15 @@
-use std::{sync::Arc, pin::Pin, future::Future};
-use wasm_bindgen::prelude::*;
-use js_sys::Promise;
-use wasm_bindgen_futures::JsFuture;
+use std::{
+    sync::Arc,
+    pin::Pin,
+    future::Future,
+    time::Duration,
+};
 
 pub type Fut<T = ()> = Pin<Box<dyn Future<Output = T>>>;
 
-pub struct JsWaiter {
-    waiter: js_sys::Function,
-}
-
-impl JsWaiter {
-    pub fn new(waiter: js_sys::Function) -> Self {
-        Self { waiter }
-    }
-    pub async fn wait(&self, duration: instant::Duration) -> Result<(), JsValue> {
-        let this = JsValue::null();
-        let seconds = duration.as_secs() as f64 + duration.subsec_nanos() as f64 / 1_000_000_000.0;
-        let seconds = JsValue::from(seconds);
-        let promise = self.waiter.call1(&this, &seconds)?;
-        let promise = Promise::resolve(&promise);
-        let future = JsFuture::from(promise);
-        future.await?;
-        Ok(())
-    }
+pub trait Time {
+    fn now_as_timestamp_nanos(&self) -> u128;
+    fn wait(&self, dur: Duration) -> Fut;
 }
 
 pub struct Sound {

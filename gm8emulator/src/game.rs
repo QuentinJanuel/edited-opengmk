@@ -22,10 +22,7 @@ pub use background::Background;
 // pub use savestate::SaveState;
 pub use view::View;
 use wasm_bindgen::JsValue;
-use wasm_bindgen_futures::JsFuture;
-
-use std::{sync::Arc, future::Future, pin::Pin};
-
+use std::sync::Arc;
 use crate::{
     action::Tree,
     asset::{
@@ -47,7 +44,7 @@ use crate::{
     render::{atlas::AtlasBuilder, Renderer, RendererOptions, Scaling},
     tile,
     types::{Colour, ID},
-    util, jsutils::JsWaiter,
+    util,
 };
 use encoding_rs::Encoding;
 use gm8exe::asset::{
@@ -76,12 +73,11 @@ use instant::{Instant, Duration};
 /// Structure which contains all the components of a game.
 pub struct Game {
     pub logger: Arc<dyn Fn(&str)>,
-    pub waiter: JsWaiter,
-    // pub on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
     pub ctx: web_sys::CanvasRenderingContext2d,
     pub on_pressed: Arc<dyn Fn() -> JsValue>,
     pub on_released: Arc<dyn Fn() -> JsValue>,
     pub js_audio: Arc<dyn crate::jsutils::Audio>,
+    pub js_time: Arc<dyn crate::jsutils::Time>,
 
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
@@ -299,12 +295,11 @@ impl Game {
         frame_limiter: bool,
         play_type: PlayType,
         logger: Arc<dyn Fn(&str)>,
-        waiter: JsWaiter,
-        // on_frame: Arc<dyn Fn(Vec<(f64, f64)>)>,
         ctx: web_sys::CanvasRenderingContext2d,
         on_pressed: Arc<dyn Fn() -> JsValue>,
         on_released: Arc<dyn Fn() -> JsValue>,
         js_audio: Arc<dyn crate::jsutils::Audio>,
+        js_time: Arc<dyn crate::jsutils::Time>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -1196,12 +1191,11 @@ impl Game {
 
         let mut game = Self {
             logger,
-            waiter,
-            // on_frame,
             ctx,
             on_pressed,
             on_released,
             js_audio,
+            js_time,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -1757,7 +1751,7 @@ impl Game {
                             if let Some(dur) = FRAME_TIME.checked_sub(diff) {
                                 gml::datetime::sleep(
                                     dur,
-                                    &self.waiter,
+                                    Arc::clone(&self.js_time),
                                 ).await;
                             }
                         }
@@ -2265,13 +2259,13 @@ impl Game {
             if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
                 gml::datetime::sleep(
                     time,
-                    &self.waiter,
+                    Arc::clone(&self.js_time),
                 ).await;
                 time_now += duration;
             } else {
                 gml::datetime::sleep(
                     Duration::from_nanos(0),
-                    &self.waiter,
+                    Arc::clone(&self.js_time),
                 ).await;
                 time_now = Instant::now();
             }

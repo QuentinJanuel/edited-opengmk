@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
     time,
+    sync::Arc,
 };
 
 const DEFAULT_ALARM: i32 = -1;
@@ -1158,13 +1159,13 @@ impl Game {
                     Ok((0 as u32).into())
                 }
             },
-            InstanceVariable::CurrentYear => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).year().into()),
-            InstanceVariable::CurrentMonth => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).month().into()),
-            InstanceVariable::CurrentDay => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).day().into()),
-            InstanceVariable::CurrentWeekday => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).weekday().into()),
-            InstanceVariable::CurrentHour => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).hour().into()),
-            InstanceVariable::CurrentMinute => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).minute().into()),
-            InstanceVariable::CurrentSecond => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).second().into()),
+            InstanceVariable::CurrentYear => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).year().into()),
+            InstanceVariable::CurrentMonth => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).month().into()),
+            InstanceVariable::CurrentDay => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).day().into()),
+            InstanceVariable::CurrentWeekday => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).weekday().into()),
+            InstanceVariable::CurrentHour => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).hour().into()),
+            InstanceVariable::CurrentMinute => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).minute().into()),
+            InstanceVariable::CurrentSecond => Ok(DateTime::now_or_nanos(self.spoofed_time_nanos, Arc::clone(&self.js_time)).second().into()),
             InstanceVariable::EventType => Ok(context.event_type.into()),
             InstanceVariable::EventNumber => Ok(context.event_number.into()),
             InstanceVariable::EventObject => Ok(context.event_object.into()),

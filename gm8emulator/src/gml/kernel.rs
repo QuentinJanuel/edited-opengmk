@@ -35,6 +35,7 @@ use image::RgbaImage;
 use std::{
     io::{Read, Write},
     process::Command,
+    sync::Arc,
 };
 
 macro_rules! _arg_into {
@@ -7893,17 +7894,26 @@ impl Game {
 
     pub fn date_current_datetime(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).into())
+        Ok(DateTime::now_or_nanos(
+            self.spoofed_time_nanos,
+            Arc::clone(&self.js_time),
+        ).into())
     }
 
     pub fn date_current_date(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).date().into())
+        Ok(DateTime::now_or_nanos(
+            self.spoofed_time_nanos,
+            Arc::clone(&self.js_time),
+        ).date().into())
     }
 
     pub fn date_current_time(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).time().into())
+        Ok(DateTime::now_or_nanos(
+            self.spoofed_time_nanos,
+            Arc::clone(&self.js_time),
+        ).time().into())
     }
 
     pub fn date_create_datetime(args: &[Value]) -> gml::Result<Value> {
@@ -12392,7 +12402,9 @@ impl Game {
         let sound_id = expect_args!(args, [int])?;
         if let Some(sound) = self.assets.sounds.get_asset(sound_id) {
             use asset::sound::FileType;
-            let nanos = self.spoofed_time_nanos.unwrap_or_else(|| datetime::now_as_nanos());
+            let nanos = self.spoofed_time_nanos.unwrap_or_else(||
+                datetime::now_as_nanos(Arc::clone(&self.js_time))
+            );
             match &sound.handle {
                 FileType::Mp3(handle) => self.audio.play_mp3(handle, nanos),
                 FileType::Wav(handle) => self.audio.play_wav(handle, nanos),
@@ -12432,7 +12444,9 @@ impl Game {
 
     pub fn sound_isplaying(&self, args: &[Value]) -> gml::Result<Value> {
         let sound_id = expect_args!(args, [int])?;
-        let nanos = self.spoofed_time_nanos.unwrap_or_else(|| datetime::now_as_nanos());
+        let nanos = self.spoofed_time_nanos.unwrap_or_else(||
+            datetime::now_as_nanos(Arc::clone(&self.js_time),)
+        );
         Ok(self.audio.sound_playing(sound_id, nanos).into())
     }
 
