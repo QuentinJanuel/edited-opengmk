@@ -12405,13 +12405,9 @@ impl Game {
     }
 
     pub fn sound_loop(&mut self, args: &[Value]) -> gml::Result<Value> {
-        self.log("Looping sound...");
         let sound_id = expect_args!(args, [int])?;
         if let Some(sound) = self.assets.sounds.get_asset(sound_id) {
             use asset::sound::FileType;
-            if let FileType::None = &sound.handle {
-                self.log("...but filetype is none");
-            }
             match &sound.handle {
                 FileType::Mp3(handle) => self.audio.loop_mp3(handle),
                 FileType::Wav(handle) => self.audio.loop_wav(handle),

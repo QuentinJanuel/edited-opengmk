@@ -2016,6 +2016,7 @@ impl Game {
                         "left" => input::Button::LeftArrow,
                         "right" => input::Button::RightArrow,
                         "jump" => input::Button::Shift,
+                        "r" => input::Button::R,
                         _ => panic!("Unexpected input"),
                     };
                     button as u8
@@ -2185,17 +2186,21 @@ impl Game {
                 0.0,
                 0.0,
                 800.0,
-                600.0,
+                608.0,
             );
             self.ctx.set_fill_style(&JsValue::from_str("#F00"));
             let instances = &self.room.instance_list;
             let mut iter = instances.iter_by_drawing();
-            // for view in self.room.views {
-            //     if !view.visible {
-            //         continue;
-            //     }
-            //     // let x = view.
-            // }
+            let mut source_x = 0;
+            let mut source_y = 0;
+            for view in &self.room.views {
+                if !view.visible {
+                    continue;
+                }
+                source_x = view.source_x;
+                source_y = view.source_y;
+                break;
+            }
             while let Some(instance) = iter.next(instances) {
                 let instance = instances.get(instance);
                 // let object = self
@@ -2208,6 +2213,8 @@ impl Game {
                 // }
                 let x: f64 = instance.x.get().into();
                 let y: f64 = instance.y.get().into();
+                let x = x - source_x as f64;
+                let y = y - source_y as f64;
                 let size = 31f64;
                 self.ctx.fill_rect(x.round(), y.round(), size, size);
             }

@@ -1,4 +1,5 @@
 use crate::{gml::Value, math::Real};
+use instant::SystemTime;
 use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 use crate::jsutils::JsWaiter;
 
@@ -21,16 +22,18 @@ fn epoch() -> PrimitiveDateTime {
     time::macros::date!(1899 - 12 - 30).midnight()
 }
 
-fn now() -> instant::Instant {
-    instant::Instant::now()
-    // OffsetDateTime::now_utc()
+fn now() -> OffsetDateTime {
+    // instant::Instant::now()
+    let now = js_sys::Date::now() as u128;
+    let now_as_nanos = now * 1_000_000;
+    OffsetDateTime::from_unix_timestamp_nanos(now_as_nanos as i128)
+        .expect("Failed to convert to OffsetDateTime")
         // + time::Duration::seconds(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC).whole_seconds().into())
 }
 
 pub fn now_as_nanos() -> u128 {
-    // let datetime = now();
-    0
-    // datetime.unix_timestamp_nanos().try_into().unwrap_or(0)
+    let datetime = now();
+    datetime.unix_timestamp_nanos().try_into().unwrap_or(0)
 }
 
 fn i32_to_month(m: i32) -> Option<time::Month> {
@@ -65,12 +68,12 @@ impl DateTime {
                     + time::Duration::nanoseconds((nanos % 1_000_000_000) as _)
             },
             None => {
-                // let dt = now();
-                // dt.date().with_time(dt.time())
-                PrimitiveDateTime::new(
-                    time::Date::MIN,
-                    time::Time::MIDNIGHT,
-                )
+                let dt = now();
+                dt.date().with_time(dt.time())
+                // PrimitiveDateTime::new(
+                    // time::Date::MIN,
+                    // time::Time::MIDNIGHT,
+                // )
             },
         })
     }
