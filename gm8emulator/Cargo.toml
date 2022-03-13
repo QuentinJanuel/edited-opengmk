@@ -14,12 +14,6 @@ rust-version = "1.59"
 # winres = "0.1"
 
 [dependencies]
-js-sys = "0.3.56"
-wasm-bindgen-futures = "0.4.29"
-wasm-bindgen = { version = "0.2.63", features = ["serde-serialize"] } 
-web-sys = { version = "0.3.56", features = [
-    "CanvasRenderingContext2d",
-] }
 instant = { version = "0.1.12", features = [ "wasm-bindgen" ] }
 bincode = "1.2"
 flate2 = { version = "1.0" }
@@ -44,10 +38,10 @@ rect_packer = "0.2.1"
 rust-ini = "0.17"
 serde = { version = "1.0", features = ["derive", "rc"] }
 time = { version = "0.3", features = ["local-offset", "macros"] }
-udon = { git = "https://github.com/adamcake/udon", branch = "july-demo", features = [
-    "serde-derives",
-    "wav",
-] }
+# udon = { git = "https://github.com/adamcake/udon", branch = "july-demo", features = [
+#     "serde-derives",
+#     "wav",
+# ] }
 
 # [target.'cfg(all(target_os = "windows"))'.dependencies]
 # crc32fast = "1.2"

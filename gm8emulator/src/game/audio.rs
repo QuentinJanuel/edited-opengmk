@@ -9,9 +9,9 @@ use std::{
         Arc,
     },
 };
-use udon::{
-    wav::WavPlayer,
-};
+// use udon::{
+//     wav::WavPlayer,
+// };
 use self::{
     mp3::Mp3Player,
 };
@@ -25,7 +25,7 @@ pub struct Mp3Handle {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WavHandle {
-    player: WavPlayer,
+    // player: WavPlayer,
     params: Arc<SoundParams>,
     _use_3d: bool,
     exclusive: bool,
@@ -88,16 +88,16 @@ impl AudioManager {
         use_3d: bool,
         exclusive: bool,
     ) -> Option<WavHandle> {
-        WavPlayer::new(file.clone())
-            .map(|player| WavHandle {
-                player,
+        // WavPlayer::new(file.clone())
+            /* .map(|player|*/ Some(WavHandle {
+                // player,
                 params: Arc::new(SoundParams { volume: AtomicU32::new(make_volume(volume).to_bits()) }),
                 _use_3d: use_3d,
                 exclusive,
                 id: sound_id,
                 file: file.into(),
-            })
-            .ok()
+            }) // )
+            // .ok()
     }
 
     pub fn play_mp3(&mut self, handle: &Mp3Handle, _start_time: u128) {
