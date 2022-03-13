@@ -10,18 +10,12 @@ pub mod movement;
 pub mod particle;
 pub mod pathfinding;
 pub mod platform;
-// pub mod recording;
-// pub mod replay;
-// pub mod savestate;
 pub mod surface;
 pub mod transition;
 pub mod view;
 
 pub use background::Background;
-// pub use replay::Replay;
-// pub use savestate::SaveState;
 pub use view::View;
-use wasm_bindgen::JsValue;
 use std::sync::Arc;
 use crate::{
     action::Tree,
@@ -48,7 +42,7 @@ use crate::{
 };
 use encoding_rs::Encoding;
 use gm8exe::asset::{
-    extension::{CallingConvention, FileKind, FunctionValueKind},
+    // extension::{CallingConvention, FileKind, FunctionValueKind},
     PascalString,
 };
 use includedfile::IncludedFile;
@@ -62,9 +56,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     cell::{Cell, RefCell},
-    collections::{BTreeMap, HashMap, HashSet, VecDeque},
-    fs::File,
-    io::Write,
+    collections::{BTreeMap, HashMap, HashSet},
     path::PathBuf,
     rc::Rc,
 };
@@ -73,8 +65,6 @@ use crate::external as ext;
 
 /// Structure which contains all the components of a game.
 pub struct Game {
-    pub ctx: web_sys::CanvasRenderingContext2d,
-
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
     pub binary_files: HandleArray<file::BinaryHandle, 32>,
@@ -206,6 +196,7 @@ pub enum Version {
 
 /// Enum indicating how this game is being played - normal, recording or replaying
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum PlayType {
     Normal,
     Record,
@@ -214,6 +205,7 @@ pub enum PlayType {
 
 /// Various different types of scene change which can be requested by GML
 #[derive(Clone)]
+
 pub enum SceneChange {
     Room(ID),      // Go to the specified room
     Restart,       // Restart the game and go to the first room
@@ -222,6 +214,7 @@ pub enum SceneChange {
 }
 
 /// A function defined in an extension, which could either be a DLL external or some compiled GML
+#[allow(dead_code)]
 pub enum ExtensionFunction {
     Dll(String, ID),
     Gml(Rc<[Instruction]>),
@@ -290,7 +283,6 @@ impl Game {
         encoding: &'static Encoding,
         frame_limiter: bool,
         play_type: PlayType,
-        ctx: web_sys::CanvasRenderingContext2d,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -369,7 +361,7 @@ impl Game {
 
         let _ = room1;
 
-        let mut rand = Random::new();
+        let /*mut*/ rand = Random::new();
 
         // manual decode to avoid errors
         let decode_str_maybe = |bytes: Vec<u8>| match gm_version {
@@ -438,7 +430,7 @@ impl Game {
                         },
                     },
                 };
-                let mut i = IncludedFile {
+                let /*mut*/ i = IncludedFile {
                     name: match decode_str_maybe(i.file_name.0.to_vec()) {
                         Some(s) => s,
                         None => {
@@ -592,12 +584,12 @@ impl Game {
 
         let default_font = asset::font::load_default_font(&mut atlases)?;
 
-        let mut externals = external::ExternalManager::new(play_type == PlayType::Record);
+        let /*mut*/ externals = external::ExternalManager::new(play_type == PlayType::Record);
 
         // Code compiling starts here. The order in which things are compiled is important for
         // keeping savestates compatible. This isn't 100% accurate right now, but it's mostly right.
 
-        let mut extension_functions = Vec::with_capacity(
+        let /*mut*/ extension_functions = Vec::with_capacity(
             extensions.iter().map(|x| x.files.iter().map(|f| f.functions.len()).sum::<usize>()).sum::<usize>(),
         );
         // for extension in extensions.iter() {
@@ -1178,7 +1170,6 @@ impl Game {
         renderer.push_atlases(atlases)?;
 
         let mut game = Self {
-            ctx,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -2124,25 +2115,25 @@ impl Game {
         self.load_room(self.room.id).await
     }
 
-    /// Gets the whole String to be used as the window title, including score and lives if applicable
-    pub fn get_window_title(&self) -> Cow<'_, str> {
-        use std::fmt::Write;
+    // /// Gets the whole String to be used as the window title, including score and lives if applicable
+    // pub fn get_window_title(&self) -> Cow<'_, str> {
+    //     use std::fmt::Write;
 
-        let show_score = self.score_capt_d && (self.has_set_show_score || self.score > 0);
-        if show_score || self.lives_capt_d {
-            let mut caption = self.decode_str(self.room.caption.as_ref()).into_owned();
-            // write!() on a String never panics
-            if show_score {
-                write!(caption, " {}{}", self.decode_str(self.score_capt.as_ref()), self.score).unwrap();
-            }
-            if self.lives_capt_d {
-                write!(caption, " {}{}", self.decode_str(self.lives_capt.as_ref()), self.lives).unwrap();
-            }
-            caption.into()
-        } else {
-            self.decode_str(self.room.caption.as_ref())
-        }
-    }
+    //     let show_score = self.score_capt_d && (self.has_set_show_score || self.score > 0);
+    //     if show_score || self.lives_capt_d {
+    //         let mut caption = self.decode_str(self.room.caption.as_ref()).into_owned();
+    //         // write!() on a String never panics
+    //         if show_score {
+    //             write!(caption, " {}{}", self.decode_str(self.score_capt.as_ref()), self.score).unwrap();
+    //         }
+    //         if self.lives_capt_d {
+    //             write!(caption, " {}{}", self.decode_str(self.lives_capt.as_ref()), self.lives).unwrap();
+    //         }
+    //         caption.into()
+    //     } else {
+    //         self.decode_str(self.room.caption.as_ref())
+    //     }
+    // }
 
     // Plays the game normally
     pub async fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -2154,13 +2145,7 @@ impl Game {
             self.process_window_events();
             self.frame()?;
             // 
-            self.ctx.clear_rect(
-                0.0,
-                0.0,
-                800.0,
-                608.0,
-            );
-            self.ctx.set_fill_style(&JsValue::from_str("#F00"));
+            ext::renderer().clear();
             let instances = &self.room.instance_list;
             let mut iter = instances.iter_by_drawing();
             let mut source_x = 0;
@@ -2175,20 +2160,12 @@ impl Game {
             }
             while let Some(instance) = iter.next(instances) {
                 let instance = instances.get(instance);
-                // let object = self
-                //     .assets
-                //     .objects
-                //     .get_asset(instance.object_index.get())
-                //     .unwrap();
-                // if &format!("{}", object.name) == "blood" {
-                //     continue;
-                // }
                 let x: f64 = instance.x.get().into();
                 let y: f64 = instance.y.get().into();
                 let x = x - source_x as f64;
                 let y = y - source_y as f64;
                 let size = 31f64;
-                self.ctx.fill_rect(x.round(), y.round(), size, size);
+                ext::renderer().draw_rect(x, y, size, size);
             }
             // 
             handle_scene_change!(self);

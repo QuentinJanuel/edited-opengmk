@@ -19,6 +19,7 @@ use dummy as ipc;
 
 pub use native::NativeExternal;
 
+#[allow(dead_code)]
 pub enum Call {
     Dummy(gml::Value),
     Emulated(Function),
@@ -109,18 +110,18 @@ impl ExternalManager {
         }
     }
 
-    pub fn save_state(&self) -> ExternalState {
-        let signatures = self.externals.iter().map(|o| o.as_ref().map(|e| e.signature.clone())).collect();
-        ExternalState { signatures }
-    }
+    // pub fn save_state(&self) -> ExternalState {
+    //     let signatures = self.externals.iter().map(|o| o.as_ref().map(|e| e.signature.clone())).collect();
+    //     ExternalState { signatures }
+    // }
 
-    pub fn load_state(&mut self, mut state: ExternalState) {
-        self.externals.clear();
-        for opt in state.signatures.drain(..) {
-            let external = opt.map(|s| External { call: self.make_call(&s).unwrap(), signature: s });
-            self.externals.push(external);
-        }
-    }
+    // pub fn load_state(&mut self, mut state: ExternalState) {
+    //     self.externals.clear();
+    //     for opt in state.signatures.drain(..) {
+    //         let external = opt.map(|s| External { call: self.make_call(&s).unwrap(), signature: s });
+    //         self.externals.push(external);
+    //     }
+    // }
 
     fn should_dummy(&self, signature: &dll::ExternalSignature) -> Option<gml::Value> {
         let dll = &signature.dll;

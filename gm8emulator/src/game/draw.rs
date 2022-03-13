@@ -1,6 +1,11 @@
 use crate::{
     asset::{self, font, Font},
-    game::{Game, GetAsset, PlayType, Version},
+    game::{
+        Game,
+        GetAsset,
+        // PlayType,
+        Version,
+    },
     gml,
     math::Real,
 };
@@ -217,10 +222,10 @@ impl Game {
         );
 
         // Apply room caption
-        let title = self.get_window_title();
-        if self.play_type != PlayType::Record {
-            // self.window.set_title(title.as_ref());
-        }
+        // let title = self.get_window_title();
+        // if self.play_type != PlayType::Record {
+        //     // self.window.set_title(title.as_ref());
+        // }
 
         Ok(())
     }

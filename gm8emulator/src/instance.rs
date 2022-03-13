@@ -9,14 +9,14 @@ use serde::{Deserialize, Serialize};
 use std::{
     cell::{Cell, RefCell},
     collections::{HashMap, HashSet},
-    f64,
+    // f64,
     rc::Rc,
 };
 
 // Default in GameMaker 8
 const BBOX_DEFAULT: i32 = -100000;
 // Rust can't represent this many decimal places yet I think. In GM8 it's a TBYTE definition
-const PI: f64 = 3.1415926535897932380;
+// const PI: f64 = 3.1415926535897932380;
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub enum InstanceState {

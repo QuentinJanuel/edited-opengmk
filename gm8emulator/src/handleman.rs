@@ -68,17 +68,17 @@ impl<T, const LEN: usize> HandleArray<T, LEN> {
         Self([Self::NONE_INIT; LEN])
     }
 
-    pub fn get(&self, index: i32) -> Option<&T> {
-        self.0.get(usize::try_from(index).ok()?)?.as_ref()
-    }
+    // pub fn get(&self, index: i32) -> Option<&T> {
+    //     self.0.get(usize::try_from(index).ok()?)?.as_ref()
+    // }
 
-    pub fn get_mut(&mut self, index: i32) -> Option<&mut T> {
-        self.0.get_mut(usize::try_from(index).ok()?)?.as_mut()
-    }
+    // pub fn get_mut(&mut self, index: i32) -> Option<&mut T> {
+    //     self.0.get_mut(usize::try_from(index).ok()?)?.as_mut()
+    // }
 
-    pub fn capacity(&self) -> i32 {
-        LEN.try_into().unwrap()
-    }
+    // pub fn capacity(&self) -> i32 {
+    //     LEN.try_into().unwrap()
+    // }
 }
 
 #[inline]

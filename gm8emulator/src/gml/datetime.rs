@@ -4,7 +4,6 @@ use time::{
     PrimitiveDateTime,
     // UtcOffset,
 };
-use std::sync::Arc;
 use crate::external as ext;
 
 /// Sleep for T minus 1 millisecond, and busywait for the rest of the duration.

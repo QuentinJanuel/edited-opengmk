@@ -1,7 +1,7 @@
-use crate::types::ArraySerde;
+// use crate::types::ArraySerde;
 // use rmp3::{Decoder, Frame, RawDecoder};
 use serde::{Deserialize, Serialize};
-use std::{alloc, sync::Arc};
+use std::sync::Arc;
 // use udon::source::{ChannelCount, Sample, SampleRate, Source};
 
 /// This MP3 player is deliberately designed to emulate bugs in GameMaker 8. Specifically:
@@ -35,6 +35,7 @@ pub struct Mp3Player {
 //     }
 // }
 
+#[allow(dead_code)]
 pub enum Error {
     InvalidFile,
     InvalidDetails,
@@ -45,7 +46,7 @@ impl Mp3Player {
     pub fn new(file: impl Into<Vec<u8>>) -> Result<Self, Error> {
         let file = file.into();
         // if let Some((channels, sample_rate)) = details(Decoder::new(&file)) {
-            let mut length = 0;
+            let /*mut*/ length = 0;
         //     // let mut decoder = Decoder::new(&file);
         //     // while let Some(frame) = decoder.next() {
         //     //     if let Frame::Audio(audio) = frame {
@@ -80,56 +81,56 @@ impl Mp3Player {
         // }
     }
 
-    /// The number of samples which will actually be played out. Divide by sample rate to get length in seconds.
-    #[inline(always)]
-    pub fn length(&self) -> usize {
-        self.length
-    }
+    // /// The number of samples which will actually be played out. Divide by sample rate to get length in seconds.
+    // #[inline(always)]
+    // pub fn length(&self) -> usize {
+    //     self.length
+    // }
 
-    fn flush(&mut self/*, output: &mut [Sample] */) -> usize {
-        // // get the biggest slice that can be copied directly into `output`
-        // let mut buffer = &self.buffer[self.buffer_off..self.buffer_off + self.buffer_len];
-        // if buffer.len() > output.len() {
-        //     buffer = &buffer[..output.len()];
-        // }
+    // fn flush(&mut self/*, output: &mut [Sample] */) -> usize {
+    //     // // get the biggest slice that can be copied directly into `output`
+    //     // let mut buffer = &self.buffer[self.buffer_off..self.buffer_off + self.buffer_len];
+    //     // if buffer.len() > output.len() {
+    //     //     buffer = &buffer[..output.len()];
+    //     // }
 
-        // // copy samples into `output`
-        // (&mut output[..buffer.len()]).copy_from_slice(buffer);
+    //     // // copy samples into `output`
+    //     // (&mut output[..buffer.len()]).copy_from_slice(buffer);
 
-        // // adjust internal state
-        // self.buffer_len -= buffer.len();
-        // if self.buffer_len > 0 {
-        //     self.buffer_off += buffer.len();
-        // } else {
-        //     self.buffer_off = 0;
-        // }
+    //     // // adjust internal state
+    //     // self.buffer_len -= buffer.len();
+    //     // if self.buffer_len > 0 {
+    //     //     self.buffer_off += buffer.len();
+    //     // } else {
+    //     //     self.buffer_off = 0;
+    //     // }
 
-        // // return samples written
-        // buffer.len()
-        0
-    }
+    //     // // return samples written
+    //     // buffer.len()
+    //     0
+    // }
 
-    fn refill(&mut self) -> bool {
-        // loop {
-        //     match self.decoder.0.next(&self.file[self.offset..], &mut self.buffer) {
-        //         Some((rmp3::Frame::Audio(audio), bytes_consumed)) => {
-        //             self.offset += bytes_consumed;
-        //             if self.channels.get() == audio.channels() {
-        //                 self.buffer_off = 0;
-        //                 self.buffer_len = usize::from(audio.channels()) * audio.sample_count();
-        //                 break true
-        //             }
-        //         },
-        //         Some((rmp3::Frame::Other(_), bytes_consumed)) => self.offset += bytes_consumed,
-        //         None => {
-        //             self.buffer_off = 0;
-        //             self.buffer_len = 0;
-        //             break false
-        //         },
-        //     }
-        // }
-        true
-    }
+    // fn refill(&mut self) -> bool {
+    //     // loop {
+    //     //     match self.decoder.0.next(&self.file[self.offset..], &mut self.buffer) {
+    //     //         Some((rmp3::Frame::Audio(audio), bytes_consumed)) => {
+    //     //             self.offset += bytes_consumed;
+    //     //             if self.channels.get() == audio.channels() {
+    //     //                 self.buffer_off = 0;
+    //     //                 self.buffer_len = usize::from(audio.channels()) * audio.sample_count();
+    //     //                 break true
+    //     //             }
+    //     //         },
+    //     //         Some((rmp3::Frame::Other(_), bytes_consumed)) => self.offset += bytes_consumed,
+    //     //         None => {
+    //     //             self.buffer_off = 0;
+    //     //             self.buffer_len = 0;
+    //     //             break false
+    //     //         },
+    //     //     }
+    //     // }
+    //     true
+    // }
 }
 
 // impl Source for Mp3Player {

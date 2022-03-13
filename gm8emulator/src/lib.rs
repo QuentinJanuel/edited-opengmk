@@ -18,17 +18,11 @@ use game::{
     Game,
     PlayType,
 };
-use wasm_bindgen::JsValue;
-use std::sync::Arc;
-use external as ext;
 
 const EXIT_SUCCESS: i32 = 0;
 const EXIT_FAILURE: i32 = 1;
 
-pub async fn run(
-    data: &[u8],
-    ctx: web_sys::CanvasRenderingContext2d,
-) -> i32 {
+pub async fn run(data: &[u8]) -> i32 {
     let spoof_time = false;
     let frame_limiter = true;
     let game_args = vec![String::new()];
@@ -51,7 +45,6 @@ pub async fn run(
             encoding,
             frame_limiter,
             play_type,
-            ctx,
         ).await {
             Ok(g) => g,
             Err(e) => {

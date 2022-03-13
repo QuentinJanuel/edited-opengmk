@@ -105,8 +105,8 @@ impl AtlasBuilder {
         self.texture(width, height, origin_x, origin_y, data)
     }
 
-    #[allow(clippy::type_complexity)] // It's for the Renderer only.
-    pub(super) fn into_inner(self) -> (Vec<DensePacker>, Vec<(AtlasRect, Box<[u8]>)>) {
-        (self.packers, self.textures)
-    }
+    // #[allow(clippy::type_complexity)] // It's for the Renderer only.
+    // pub(super) fn into_inner(self) -> (Vec<DensePacker>, Vec<(AtlasRect, Box<[u8]>)>) {
+    //     (self.packers, self.textures)
+    // }
 }

@@ -155,14 +155,14 @@ impl Value {
         }
     }
 
-    /// Formats the value as a number or a string with quotes around it so you can see that it is.
-    /// Used in generating error messages.
-    fn log_fmt(&self) -> String {
-        match self {
-            Self::Real(real) => real.to_string(),
-            Self::Str(string) => format!("\"{}\"", string),
-        }
-    }
+    // /// Formats the value as a number or a string with quotes around it so you can see that it is.
+    // /// Used in generating error messages.
+    // fn log_fmt(&self) -> String {
+    //     match self {
+    //         Self::Real(real) => real.to_string(),
+    //         Self::Str(string) => format!("\"{}\"", string),
+    //     }
+    // }
 
     pub fn is_truthy(&self) -> bool {
         match self {

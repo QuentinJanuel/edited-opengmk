@@ -78,9 +78,9 @@ impl<T> ChunkList<T> {
         }
     }
 
-    fn iter(&self) -> impl Iterator<Item = &Chunk<T>> {
-        self.0.iter()
-    }
+    // fn iter(&self) -> impl Iterator<Item = &Chunk<T>> {
+    //     self.0.iter()
+    // }
 
     fn iter_mut(&mut self) -> impl Iterator<Item = &mut Chunk<T>> {
         self.0.iter_mut()
@@ -128,14 +128,14 @@ impl<T> ChunkList<T> {
         output
     }
 
-    fn clear(&mut self) {
-        for chunk in self.iter_mut() {
-            for slot in chunk.slots.iter_mut() {
-                *slot = None;
-            }
-            chunk.vacant = CHUNK_SIZE;
-        }
-    }
+    // fn clear(&mut self) {
+    //     for chunk in self.iter_mut() {
+    //         for slot in chunk.slots.iter_mut() {
+    //             *slot = None;
+    //         }
+    //         chunk.vacant = CHUNK_SIZE;
+    //     }
+    // }
 }
 
 // non-borrowing instancelist iterator things
@@ -364,9 +364,9 @@ impl InstanceList {
         }
     }
 
-    pub fn obj_count_hint(&mut self, n: usize) {
-        self.object_id_map.reserve((n as isize - self.object_id_map.len() as isize).max(0) as usize);
-    }
+    // pub fn obj_count_hint(&mut self, n: usize) {
+    //     self.object_id_map.reserve((n as isize - self.object_id_map.len() as isize).max(0) as usize);
+    // }
 
     pub fn remove_with(&mut self, f: impl Fn(&Instance) -> bool) {
         if self.chunks.remove_with(f) > 0 {
@@ -451,10 +451,10 @@ impl TileList {
         }
     }
 
-    pub fn clear(&mut self) {
-        self.chunks.clear();
-        self.draw_order.clear();
-    }
+    // pub fn clear(&mut self) {
+    //     self.chunks.clear();
+    //     self.draw_order.clear();
+    // }
 }
 
 impl<T> Serialize for ChunkList<T>

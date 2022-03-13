@@ -39,6 +39,7 @@ pub struct SoundParams {
     pub volume: AtomicU32,
 }
 
+#[allow(dead_code)]
 pub struct AudioManager {
     // mixer_handle: MixerHandle,
     // mixer_channel_count: ChannelCount,
@@ -99,7 +100,7 @@ impl AudioManager {
             .ok()
     }
 
-    pub fn play_mp3(&mut self, handle: &Mp3Handle, start_time: u128) {
+    pub fn play_mp3(&mut self, handle: &Mp3Handle, _start_time: u128) {
         ext::audio().play(handle.id, false);
         // let end_time = length_to_ns(
         //     handle.player.length(),
@@ -118,7 +119,7 @@ impl AudioManager {
         // }
     }
 
-    pub fn play_wav(&mut self, handle: &WavHandle, start_time: u128) {
+    pub fn play_wav(&mut self, handle: &WavHandle, _start_time: u128) {
         ext::audio().play(handle.id, false);
         // let end_time = length_to_ns(
         //     handle.player.length(),
@@ -239,19 +240,19 @@ impl AudioManager {
         }
     }
 
-    pub fn state(&self) -> AudioState {
-        AudioState {
-            global_volume: self.global_volume.clone(),
-            end_times: self.end_times.clone(),
-            multimedia_end: self.multimedia_end,
-        }
-    }
+    // pub fn state(&self) -> AudioState {
+    //     AudioState {
+    //         global_volume: self.global_volume.clone(),
+    //         end_times: self.end_times.clone(),
+    //         multimedia_end: self.multimedia_end,
+    //     }
+    // }
 
-    pub fn set_state(&mut self, state: AudioState) {
-        self.global_volume = state.global_volume;
-        self.end_times = state.end_times;
-        self.multimedia_end = state.multimedia_end;
-    }
+    // pub fn set_state(&mut self, state: AudioState) {
+    //     self.global_volume = state.global_volume;
+    //     self.end_times = state.end_times;
+    //     self.multimedia_end = state.multimedia_end;
+    // }
 }
 
 impl WavHandle {
@@ -261,6 +262,7 @@ impl WavHandle {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct AudioState {
     #[serde(skip)]
     global_volume: Arc<AtomicU32>,
@@ -268,9 +270,9 @@ pub struct AudioState {
     multimedia_end: Option<(i32, Option<u128>)>,
 }
 
-fn length_to_ns(sample_count: usize, sample_rate: u32, channels: u16) -> u128 {
-    (sample_count as u128 * 1_000_000_000) / (u128::from(sample_rate) * u128::from(channels))
-}
+// fn length_to_ns(sample_count: usize, sample_rate: u32, channels: u16) -> u128 {
+//     (sample_count as u128 * 1_000_000_000) / (u128::from(sample_rate) * u128::from(channels))
+// }
 
 // This function takes a volume between 0.0 and 1.0 and converts it to the logarithmic scale used by DirectMusic.
 // This is, roughly, the same function used by GM8/DirectMusic.

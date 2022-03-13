@@ -24,11 +24,11 @@ impl Random {
         Self(rand_int())
     }
 
-    /// Creates a new LCG with a given seed.
-    #[inline]
-    pub const fn with_seed(seed: i32) -> Self {
-        Self(seed)
-    }
+    // /// Creates a new LCG with a given seed.
+    // #[inline]
+    // pub const fn with_seed(seed: i32) -> Self {
+    //     Self(seed)
+    // }
 
     /// Equivalent to GML random_get_seed().
     ///
