@@ -74,8 +74,6 @@ use crate::external as ext;
 /// Structure which contains all the components of a game.
 pub struct Game {
     pub ctx: web_sys::CanvasRenderingContext2d,
-    pub on_pressed: Arc<dyn Fn() -> JsValue>,
-    pub on_released: Arc<dyn Fn() -> JsValue>,
 
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
@@ -293,8 +291,6 @@ impl Game {
         frame_limiter: bool,
         play_type: PlayType,
         ctx: web_sys::CanvasRenderingContext2d,
-        on_pressed: Arc<dyn Fn() -> JsValue>,
-        on_released: Arc<dyn Fn() -> JsValue>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -1183,8 +1179,6 @@ impl Game {
 
         let mut game = Self {
             ctx,
-            on_pressed,
-            on_released,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -2007,39 +2001,11 @@ impl Game {
         // self.window.swap_events();
         match self.play_type {
             PlayType::Normal => {
-                let on_pressed = Arc::clone(&self.on_pressed);
-                let on_released = Arc::clone(&self.on_released);
-                let pressed = on_pressed();
-                let released = on_released();
-                let pressed = pressed
-                    .into_serde::<Vec<String>>()
-                    .expect("Failed to deserialize pressed events");
-                let released = released
-                    .into_serde::<Vec<String>>()
-                    .expect("Failed to deserialize released events");
-                let key_to_button = |name: &str| {
-                    let button = match name {
-                        "left" => input::Button::LeftArrow,
-                        "right" => input::Button::RightArrow,
-                        "jump" => input::Button::Shift,
-                        "r" => input::Button::R,
-                        _ => panic!("Unexpected input"),
-                    };
-                    button as u8
-                };
-                let pressed = pressed
-                    .iter()
-                    .map(|name| key_to_button(name))
-                    .collect::<Vec<_>>();
-                let released = released
-                    .iter()
-                    .map(|name| key_to_button(name))
-                    .collect::<Vec<_>>();
-                for key in pressed {
-                    self.input.button_press(key, true);
+                for key in ext::input().pressed() {
+                    self.input.button_press(key as u8, true);
                 }
-                for key in released {
-                    self.input.button_release(key, false);
+                for key in ext::input().released()  {
+                    self.input.button_release(key as u8, false);
                 }
                 // for event in self.window.events() {
                 //     match event {

@@ -3,7 +3,7 @@ mod asset;
 mod game;
 mod gml;
 mod handleman;
-mod input;
+pub mod input;
 mod instance;
 mod instancelist;
 mod math;
@@ -28,8 +28,6 @@ const EXIT_FAILURE: i32 = 1;
 pub async fn run(
     data: &[u8],
     ctx: web_sys::CanvasRenderingContext2d,
-    on_pressed: Arc<dyn Fn() -> JsValue>,
-    on_released: Arc<dyn Fn() -> JsValue>,
 ) -> i32 {
     let spoof_time = false;
     let frame_limiter = true;
@@ -54,8 +52,6 @@ pub async fn run(
             frame_limiter,
             play_type,
             ctx,
-            on_pressed,
-            on_released,
         ).await {
             Ok(g) => g,
             Err(e) => {

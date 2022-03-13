@@ -1,6 +1,7 @@
 pub mod audio;
 pub mod time;
 pub mod logger;
+pub mod input;
 
 use std::{
     sync::{Arc, Mutex},
@@ -15,6 +16,7 @@ pub trait External {
     fn audio(&self) -> Arc<dyn audio::Audio>;
     fn time(&self) -> Arc<dyn time::Time>;
     fn logger(&self) -> Arc<dyn logger::Logger>;
+    fn input(&self) -> Arc<dyn input::Input>;
 }
 
 type TExternal = Arc<Mutex<Option<Arc<dyn External + Sync + Send>>>>;
@@ -45,6 +47,10 @@ pub fn audio() -> Arc<dyn audio::Audio> {
 
 pub fn time() -> Arc<dyn time::Time> {
     external().time()
+}
+
+pub fn input() -> Arc<dyn input::Input> {
+    external().input()
 }
 
 pub fn logger() -> Arc<dyn logger::Logger> {
