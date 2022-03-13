@@ -69,15 +69,13 @@ use std::{
     rc::Rc,
 };
 use instant::{Instant, Duration};
+use crate::external as ext;
 
 /// Structure which contains all the components of a game.
 pub struct Game {
-    pub logger: Arc<dyn Fn(&str)>,
     pub ctx: web_sys::CanvasRenderingContext2d,
     pub on_pressed: Arc<dyn Fn() -> JsValue>,
     pub on_released: Arc<dyn Fn() -> JsValue>,
-    pub js_audio: Arc<dyn crate::jsutils::Audio>,
-    pub js_time: Arc<dyn crate::jsutils::Time>,
 
     pub compiler: Compiler,
     pub text_files: HandleArray<file::TextHandle, 32>,
@@ -294,12 +292,9 @@ impl Game {
         encoding: &'static Encoding,
         frame_limiter: bool,
         play_type: PlayType,
-        logger: Arc<dyn Fn(&str)>,
         ctx: web_sys::CanvasRenderingContext2d,
         on_pressed: Arc<dyn Fn() -> JsValue>,
         on_released: Arc<dyn Fn() -> JsValue>,
-        js_audio: Arc<dyn crate::jsutils::Audio>,
-        js_time: Arc<dyn crate::jsutils::Time>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         // Parse file path
         // let mut file_path2 = file_path.clone();
@@ -314,7 +309,7 @@ impl Game {
         //     program_directory = program_directory.trim_start_matches("\\\\?\\");
         // }
         // TODO: store these as gml::String probably?
-        // eprintln!(
+        // ext_elog!(
         //     "launching game\n  > param_string: \"{}\"\n  > program_directory: \"{}\"",
         //     param_string, program_directory
         // );
@@ -414,16 +409,16 @@ impl Game {
         //         };
         //         // try making folders
         //         if let Err(e) = make_temp_dir(&mut dir) {
-        //             eprintln!("Could not create temp folder in {:?}: {}", dir, e);
+        //             ext_elog!("Could not create temp folder in {:?}: {}", dir, e);
         //             // GM8 would try C:\temp but let's skip that
         //             match std::env::current_dir().map(|x| {
         //                 dir = x;
         //                 make_temp_dir(&mut dir)
         //             }) {
-        //                 Ok(_) => eprintln!("Using game directory instead."),
+        //                 Ok(_) => ext_elog!("Using game directory instead."),
         //                 Err(e) => {
-        //                     eprintln!("Could not use game directory either: {}", e);
-        //                     eprintln!("Trying to run anyway. If this game uses the temp folder, it will likely crash.");
+        //                     ext_elog!("Could not use game directory either: {}", e);
+        //                     ext_elog!("Trying to run anyway. If this game uses the temp folder, it will likely crash.");
         //                     dir = PathBuf::new();
         //                 },
         //             }
@@ -581,10 +576,7 @@ impl Game {
         //     .expect("oh no");
 
         // Set up audio manager
-        let mut audio = audio::AudioManager::new(
-            play_type != PlayType::Record,
-            Arc::clone(&js_audio),
-        );
+        let mut audio = audio::AudioManager::new(play_type != PlayType::Record);
 
         // TODO: specific flags here (make wb mutable)
 
@@ -598,7 +590,7 @@ impl Game {
             n => Scaling::Fixed(f64::from(n) / 100.0),
         };
 
-        //println!("GPU Max Texture Size: {}", renderer.max_gpu_texture_size());
+        //ext_log!("GPU Max Texture Size: {}", renderer.max_gpu_texture_size());
 
         let particle_shapes = particle::load_shapes(&mut atlases);
 
@@ -658,7 +650,7 @@ impl Game {
         //                     }) {
         //                         Ok(id) => extension_functions.push(Some(ExtensionFunction::Dll(sym.into(), id))),
         //                         Err(e) => {
-        //                             println!(
+        //                             ext_log!(
         //                                 "WARNING: failed to load extension function {} (from {}): {}",
         //                                 function.name, dll_name, e
         //                             );
@@ -704,7 +696,7 @@ impl Game {
         //                             extension_functions.push(Some(ExtensionFunction::Gml(compiler.compile(fn_code)?)));
         //                         },
         //                         None => {
-        //                             println!(
+        //                             ext_log!(
         //                                 "WARNING: failed to load extension function {} (from {})",
         //                                 function.name, file.name
         //                             );
@@ -739,7 +731,7 @@ impl Game {
                             b".mp3" => match audio.add_mp3(data, sound_id as i32) {
                                 Some(x) => FileType::Mp3(x),
                                 None => {
-                                    // println!(
+                                    // ext_log!(
                                     //     "WARNING: invalid mp3 data in sound '{}'",
                                     //     String::from_utf8_lossy(b.name.0.as_ref())
                                     // );
@@ -755,7 +747,7 @@ impl Game {
                             ) {
                                 Some(x) => FileType::Wav(x),
                                 None => {
-                                    // println!(
+                                    // ext_log!(
                                     //     "WARNING: invalid wav data in sound '{}'",
                                     //     String::from_utf8_lossy(b.name.0.as_ref())
                                     // );
@@ -1190,12 +1182,9 @@ impl Game {
         renderer.push_atlases(atlases)?;
 
         let mut game = Self {
-            logger,
             ctx,
             on_pressed,
             on_released,
-            js_audio,
-            js_time,
             compiler,
             text_files: HandleArray::new(),
             binary_files: HandleArray::new(),
@@ -1364,14 +1353,14 @@ impl Game {
                         match &sound.handle {
                             asset::sound::FileType::Mp3(handle) => {
                                 let data = &handle.player.file;
-                                Some(crate::jsutils::Sound {
+                                Some(ext::audio::Sound {
                                     id: handle.id,
                                     data: Arc::clone(data),
                                 })
                             },
                             asset::sound::FileType::Wav(handle) => {
                                 let data = &handle.file;
-                                Some(crate::jsutils::Sound {
+                                Some(ext::audio::Sound {
                                     id: handle.id,
                                     data: Arc::clone(data),
                                 })
@@ -1382,7 +1371,7 @@ impl Game {
                     .flatten()
             })
             .collect::<Vec<_>>();
-        game.js_audio.load(sounds).await;
+        ext::audio().load(sounds).await;
         // 
 
         Ok(game)
@@ -1749,10 +1738,7 @@ impl Game {
                             // self.renderer.present(width, height, self.scaling);
                             let diff = current_time.elapsed();
                             if let Some(dur) = FRAME_TIME.checked_sub(diff) {
-                                gml::datetime::sleep(
-                                    dur,
-                                    Arc::clone(&self.js_time),
-                                ).await;
+                                gml::datetime::sleep(dur).await;
                             }
                         }
                         if let Some(t) = &mut self.spoofed_time_nanos {
@@ -2257,24 +2243,13 @@ impl Game {
             }
             self.frame_counter += 1;
             if let (Some(time), true) = (duration.checked_sub(diff), self.frame_limiter) {
-                gml::datetime::sleep(
-                    time,
-                    Arc::clone(&self.js_time),
-                ).await;
+                gml::datetime::sleep(time).await;
                 time_now += duration;
             } else {
-                gml::datetime::sleep(
-                    Duration::from_nanos(0),
-                    Arc::clone(&self.js_time),
-                ).await;
+                gml::datetime::sleep(Duration::from_nanos(0)).await;
                 time_now = Instant::now();
             }
         }
-    }
-
-    pub fn log(&self, message: &str) {
-        let logger = std::sync::Arc::clone(&self.logger);
-        logger(message);
     }
 
     // Gets the mouse position in room coordinates

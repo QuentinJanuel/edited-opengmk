@@ -178,7 +178,7 @@ unsafe fn apply_fmod_hack(handle: HMODULE) -> Result<(), String> {
     match file_hash {
         0xC39E3B94 => {
             // the usual one
-            eprintln!("Applying hack for GMFMODSimple with hash {:#X}", file_hash);
+            ext_elog!("Applying hack for GMFMODSimple with hash {:#X}", file_hash);
             // i think this is a pointer to some sort of struct containing GM8 handles ripped from the main image
             // if it's null it tries to extract them, which obviously doesn't work with the emulator
             // so make it not null : )
@@ -186,7 +186,7 @@ unsafe fn apply_fmod_hack(handle: HMODULE) -> Result<(), String> {
         },
         0xD914E241 => {
             // the 2009 build
-            eprintln!("Applying hack for GMFMODSimple with hash {:#X}", file_hash);
+            ext_elog!("Applying hack for GMFMODSimple with hash {:#X}", file_hash);
             // it tries to get the address for ds_list_add but this will access violate
             // so inject a RET instruction into the start of its GetProcAddress function
             // not to be confused with win32's GetProcAddress
@@ -202,9 +202,9 @@ unsafe fn apply_fmod_hack(handle: HMODULE) -> Result<(), String> {
         0xA11E30FF => (), // above but upx'd (used by gm82snd v1.1.6 and earlier)
         0x04756676 => (), // above but with a fix for unicode paths (used by gm82snd v1.1.7 and later)
         _ => {
-            eprintln!("WARNING: Unknown version of GMFMODSimple detected with hash {:#010X}", file_hash);
-            eprintln!("GMFMODSimple requires a hack to work, and we weren't able to apply it.");
-            eprintln!("The game is likely to crash.");
+            ext_elog!("WARNING: Unknown version of GMFMODSimple detected with hash {:#010X}", file_hash);
+            ext_elog!("GMFMODSimple requires a hack to work, and we weren't able to apply it.");
+            ext_elog!("The game is likely to crash.");
         },
     }
     Ok(())

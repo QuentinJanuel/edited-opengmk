@@ -5,17 +5,15 @@ use time::{
     // UtcOffset,
 };
 use std::sync::Arc;
+use crate::external as ext;
 
 /// Sleep for T minus 1 millisecond, and busywait for the rest of the duration.
-pub async fn sleep(
-    dur: instant::Duration,
-    js_time: Arc<dyn crate::jsutils::Time>,
-) {
+pub async fn sleep(dur: instant::Duration) {
     // TODO: find a more precise way to sleep?
     let begin = instant::Instant::now();
     let sleep_time = dur.checked_sub(instant::Duration::from_millis(1))
         .unwrap_or(instant::Duration::from_secs(0));
-    js_time.wait(sleep_time).await;
+    ext::time().wait(sleep_time).await;
     while instant::Instant::now() <= begin + dur {}
 }
 
@@ -23,15 +21,15 @@ fn epoch() -> PrimitiveDateTime {
     time::macros::date!(1899 - 12 - 30).midnight()
 }
 
-fn now(js_time: Arc<dyn crate::jsutils::Time>) -> OffsetDateTime {
-    let timestamp = js_time.now_as_timestamp_nanos() as i128;
+fn now() -> OffsetDateTime {
+    let timestamp = ext::time().now_as_timestamp_nanos() as i128;
     OffsetDateTime::from_unix_timestamp_nanos(timestamp)
         .expect("Failed to convert to OffsetDateTime")
         // + time::Duration::seconds(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC).whole_seconds().into())
 }
 
-pub fn now_as_nanos(js_time: Arc<dyn crate::jsutils::Time>) -> u128 {
-    let datetime = now(js_time);
+pub fn now_as_nanos() -> u128 {
+    let datetime = now();
     datetime.unix_timestamp_nanos().try_into().unwrap_or(0)
 }
 
@@ -57,7 +55,7 @@ fn i32_to_month(m: i32) -> Option<time::Month> {
 pub struct DateTime(PrimitiveDateTime);
 
 impl DateTime {
-    pub fn now_or_nanos(nanos: Option<u128>, js_time: Arc<dyn crate::jsutils::Time>) -> Self {
+    pub fn now_or_nanos(nanos: Option<u128>) -> Self {
         Self(match nanos {
             Some(nanos) => {
                 // manual unix timestamp because we need a PrimitiveDateTime
@@ -67,7 +65,7 @@ impl DateTime {
                     + time::Duration::nanoseconds((nanos % 1_000_000_000) as _)
             },
             None => {
-                let dt = now(js_time);
+                let dt = now();
                 dt.date().with_time(dt.time())
                 // PrimitiveDateTime::new(
                     // time::Date::MIN,

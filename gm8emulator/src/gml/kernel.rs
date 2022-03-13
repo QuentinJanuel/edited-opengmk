@@ -6177,7 +6177,7 @@ impl Game {
         // let (from, to) = expect_args!(args, [string, string])?;
         // if file::rename(from.as_ref(), to.as_ref()).is_err() {
         //     // Fail silently
-        //     eprintln!("Warning (file_rename): could not rename {} to {}", from, to);
+        //     crate::ext_elog!("Warning (file_rename): could not rename {} to {}", from, to);
         // }
         Ok(Default::default())
     }
@@ -6186,7 +6186,7 @@ impl Game {
         // let (from, to) = expect_args!(args, [string, string])?;
         // if file::copy(from.as_ref(), to.as_ref()).is_err() {
         //     // Fail silently
-        //     eprintln!("Warning (file_copy): could not copy {} to {}", from, to);
+        //     crate::ext_elog!("Warning (file_copy): could not copy {} to {}", from, to);
         // }
         Ok(Default::default())
     }
@@ -7722,7 +7722,7 @@ impl Game {
 
     pub fn show_debug_message(&self, args: &[Value]) -> gml::Result<Value> {
         let message = expect_args!(args, [any])?;
-        println!("{}", self.decode_str(message.repr().as_ref()));
+        crate::ext_log!("{}", self.decode_str(message.repr().as_ref()));
         Ok(Default::default())
     }
 
@@ -7894,26 +7894,17 @@ impl Game {
 
     pub fn date_current_datetime(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        Ok(DateTime::now_or_nanos(
-            self.spoofed_time_nanos,
-            Arc::clone(&self.js_time),
-        ).into())
+        Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).into())
     }
 
     pub fn date_current_date(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        Ok(DateTime::now_or_nanos(
-            self.spoofed_time_nanos,
-            Arc::clone(&self.js_time),
-        ).date().into())
+        Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).date().into())
     }
 
     pub fn date_current_time(&self, args: &[Value]) -> gml::Result<Value> {
         expect_args!(args, [])?;
-        Ok(DateTime::now_or_nanos(
-            self.spoofed_time_nanos,
-            Arc::clone(&self.js_time),
-        ).time().into())
+        Ok(DateTime::now_or_nanos(self.spoofed_time_nanos).time().into())
     }
 
     pub fn date_create_datetime(args: &[Value]) -> gml::Result<Value> {
@@ -8491,7 +8482,7 @@ impl Game {
         let mut images = match file::load_animation(fname.as_ref(), imgnumb) {
             Ok(frames) => frames,
             Err(e) => {
-                eprintln!("Warning: sprite_add on {} failed: {}", fname, e);
+                crate::ext_elog!("Warning: sprite_add on {} failed: {}", fname, e);
                 return Ok((-1).into())
             },
         };
@@ -8545,7 +8536,7 @@ impl Game {
             let mut images = match file::load_animation(fname.as_ref(), imgnumb) {
                 Ok(frames) => frames,
                 Err(e) => {
-                    eprintln!("Warning: sprite_replace on {} failed: {}", fname, e);
+                    crate::ext_elog!("Warning: sprite_replace on {} failed: {}", fname, e);
                     return Ok((-1).into())
                 },
             };
@@ -8903,7 +8894,7 @@ impl Game {
         let mut image = match file::load_image(fname.as_ref()) {
             Ok(im) => im,
             Err(e) => {
-                eprintln!("Warning: background_add on {} failed: {}", fname, e);
+                crate::ext_elog!("Warning: background_add on {} failed: {}", fname, e);
                 return Ok((-1).into())
             },
         };
@@ -8933,7 +8924,7 @@ impl Game {
             let mut image = match file::load_image(fname.as_ref()) {
                 Ok(im) => im,
                 Err(e) => {
-                    eprintln!("Warning: background_replace on {} failed: {}", fname, e);
+                    crate::ext_elog!("Warning: background_replace on {} failed: {}", fname, e);
                     return Ok((-1).into())
                 },
             };
@@ -11179,7 +11170,7 @@ impl Game {
                             *old_stack = stack;
                         }
                     },
-                    Err(e) => eprintln!("Warning (ds_stack_read): {}", e),
+                    Err(e) => crate::ext_elog!("Warning (ds_stack_read): {}", e),
                 }
                 Ok(Default::default())
             },
@@ -11512,7 +11503,7 @@ impl Game {
                             *old_list = list;
                         }
                     },
-                    Err(e) => eprintln!("Warning (ds_list_read): {}", e),
+                    Err(e) => crate::ext_elog!("Warning (ds_list_read): {}", e),
                 }
                 Ok(Default::default())
             },
@@ -11729,7 +11720,7 @@ impl Game {
                             *old_map = map;
                         }
                     },
-                    Err(e) => eprintln!("Warning (ds_map_read): {}", e),
+                    Err(e) => crate::ext_elog!("Warning (ds_map_read): {}", e),
                 }
                 Ok(Default::default())
             },
@@ -11988,7 +11979,7 @@ impl Game {
                             *old_pq = pq;
                         }
                     },
-                    Err(e) => eprintln!("Warning (ds_priority_read): {}", e),
+                    Err(e) => crate::ext_elog!("Warning (ds_priority_read): {}", e),
                 }
                 Ok(Default::default())
             },
@@ -12390,7 +12381,7 @@ impl Game {
                             *old_grid = grid;
                         }
                     },
-                    Err(e) => eprintln!("Warning (ds_grid_read): {}", e),
+                    Err(e) => crate::ext_elog!("Warning (ds_grid_read): {}", e),
                 }
                 Ok(Default::default())
             },
@@ -12403,7 +12394,7 @@ impl Game {
         if let Some(sound) = self.assets.sounds.get_asset(sound_id) {
             use asset::sound::FileType;
             let nanos = self.spoofed_time_nanos.unwrap_or_else(||
-                datetime::now_as_nanos(Arc::clone(&self.js_time))
+                datetime::now_as_nanos()
             );
             match &sound.handle {
                 FileType::Mp3(handle) => self.audio.play_mp3(handle, nanos),
@@ -12445,7 +12436,7 @@ impl Game {
     pub fn sound_isplaying(&self, args: &[Value]) -> gml::Result<Value> {
         let sound_id = expect_args!(args, [int])?;
         let nanos = self.spoofed_time_nanos.unwrap_or_else(||
-            datetime::now_as_nanos(Arc::clone(&self.js_time),)
+            datetime::now_as_nanos()
         );
         Ok(self.audio.sound_playing(sound_id, nanos).into())
     }
@@ -13521,7 +13512,7 @@ impl Game {
         if let Some(model) = self.models.get_asset_mut(model_id) {
             match load_model(&fname) {
                 Ok(new_model) => *model = new_model,
-                Err(e) => println!("WARNING: d3d_model_load failed: {}", e),
+                Err(e) => crate::ext_log!("WARNING: d3d_model_load failed: {}", e),
             }
         }
         Ok(Default::default())
@@ -13545,7 +13536,7 @@ impl Game {
         }
         if let Some(model) = self.models.get_asset(model_id) {
             if let Err(e) = save_model(model, &fname) {
-                println!("WARNING: d3d_model_save failed: {}", e);
+                crate::ext_log!("WARNING: d3d_model_save failed: {}", e);
             }
         }
         Ok(Default::default())

@@ -278,6 +278,7 @@ dependencies = [
  "indexmap",
  "instant",
  "js-sys",
+ "lazy_static",
  "memoffset 0.5.6",
  "phf",
  "rect_packer",

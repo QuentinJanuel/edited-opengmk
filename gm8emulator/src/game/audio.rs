@@ -2,7 +2,6 @@ mod mixer;
 mod mp3;
 
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::JsValue;
 use std::{
     collections::HashMap,
     sync::{
@@ -11,18 +10,12 @@ use std::{
     },
 };
 use udon::{
-    cycle::Cycle,
-    rechanneler::Rechanneler,
-    resampler::Resampler,
-    session::{Api, Session},
-    source::{ChannelCount, SampleRate, Source},
     wav::WavPlayer,
 };
-
 use self::{
-    mixer::{Mixer, MixerHandle},
     mp3::Mp3Player,
 };
+use crate::external as ext;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Mp3Handle {
@@ -54,14 +47,10 @@ pub struct AudioManager {
     global_volume: Arc<AtomicU32>,
     end_times: HashMap<i32, Option<u128>>,
     multimedia_end: Option<(i32, Option<u128>)>,
-    js_audio: Arc<dyn crate::jsutils::Audio>,
 }
 
 impl AudioManager {
-    pub fn new(
-        do_output: bool,
-        js_audio: Arc<dyn crate::jsutils::Audio>,
-    ) -> Self {
+    pub fn new(do_output: bool) -> Self {
         // TODO: not all these unwraps
         // let session = Session::new(Api::Wasapi).unwrap();
         // let device = session.default_output_device().unwrap();
@@ -83,7 +72,6 @@ impl AudioManager {
             global_volume,
             end_times: HashMap::new(),
             multimedia_end: None,
-            js_audio,
         }
     }
 
@@ -112,7 +100,7 @@ impl AudioManager {
     }
 
     pub fn play_mp3(&mut self, handle: &Mp3Handle, start_time: u128) {
-        self.js_audio.play(handle.id, false);
+        ext::audio().play(handle.id, false);
         // let end_time = length_to_ns(
         //     handle.player.length(),
         //     handle.player.sample_rate().into(),
@@ -131,7 +119,7 @@ impl AudioManager {
     }
 
     pub fn play_wav(&mut self, handle: &WavHandle, start_time: u128) {
-        self.js_audio.play(handle.id, false);
+        ext::audio().play(handle.id, false);
         // let end_time = length_to_ns(
         //     handle.player.length(),
         //     handle.player.sample_rate().into(),
@@ -166,7 +154,7 @@ impl AudioManager {
     }
 
     pub fn loop_mp3(&mut self, handle: &Mp3Handle) {
-        self.js_audio.play(handle.id, true);
+        ext::audio().play(handle.id, true);
         // self.multimedia_end = Some((handle.id, None));
         // if self.do_output {
         //     let _ = self.mixer_handle.add_exclusive(
@@ -180,7 +168,7 @@ impl AudioManager {
     }
 
     pub fn loop_wav(&mut self, handle: &WavHandle) {
-        self.js_audio.play(handle.id, true);
+        ext::audio().play(handle.id, true);
         // if handle.exclusive {
         //     self.multimedia_end = Some((handle.id, None));
         // } else {
@@ -210,7 +198,7 @@ impl AudioManager {
     }
 
     pub fn stop_sound(&mut self, id: i32) {
-        self.js_audio.stop(id);
+        ext::audio().stop(id);
         // self.end_times.remove(&id);
         // if self.multimedia_end.map(|(x, _)| x) == Some(id) {
         //     self.multimedia_end = None;
@@ -221,7 +209,7 @@ impl AudioManager {
     }
 
     pub fn stop_all(&mut self) {
-        self.js_audio.stop_all();
+        ext::audio().stop_all();
         // self.end_times.clear();
         // self.multimedia_end = None;
         // if self.do_output {

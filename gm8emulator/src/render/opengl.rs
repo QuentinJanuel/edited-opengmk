@@ -387,7 +387,7 @@ impl RendererImpl {
             // debug print
             let ver_str = CStr::from_ptr(gl.GetString(gl::VERSION).cast()).to_str().unwrap();
             let vendor_str = CStr::from_ptr(gl.GetString(gl::VENDOR).cast()).to_str().unwrap();
-            eprintln!("creating graphics context\n  > gl_version: \"{}\"\n  > gl_vendor: \"{}\"", ver_str, vendor_str);
+            ext_elog!("creating graphics context\n  > gl_version: \"{}\"\n  > gl_vendor: \"{}\"", ver_str, vendor_str);
 
             // requires at least GL 3.3
             let mut v_maj: GLint = 0;

@@ -113,7 +113,7 @@
 //     fn drop(&mut self) {
 //         if let Err(_) = self.send::<()>(dll::Wow64Message::Stop) {
 //             // TODO: `log` stuff
-//             eprintln!("failed to naturally stop wow64 server process, killing");
+//             ext_elog!("failed to naturally stop wow64 server process, killing");
 
 //             // what a beautiful line
 //             let _ = self.child.kill();
