@@ -18,16 +18,16 @@ pub struct AtlasRef(pub i32);
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
 #[repr(C)]
 pub struct AtlasRect {
-    pub(super) atlas_id: u32,
+    pub atlas_id: u32,
 
-    pub(super) x: i32,
-    pub(super) y: i32,
-    pub(super) w: i32,
-    pub(super) h: i32,
+    pub x: i32,
+    pub y: i32,
+    pub w: i32,
+    pub h: i32,
 
     // Normalized to 0-1 by texture width and height
-    pub(super) origin_x: f32,
-    pub(super) origin_y: f32,
+    pub origin_x: f32,
+    pub origin_y: f32,
 }
 
 impl AtlasBuilder {
@@ -105,8 +105,8 @@ impl AtlasBuilder {
         self.texture(width, height, origin_x, origin_y, data)
     }
 
-    // #[allow(clippy::type_complexity)] // It's for the Renderer only.
-    // pub(super) fn into_inner(self) -> (Vec<DensePacker>, Vec<(AtlasRect, Box<[u8]>)>) {
-    //     (self.packers, self.textures)
-    // }
+    #[allow(clippy::type_complexity)] // It's for the Renderer only.
+    pub fn into_inner(self) -> (Vec<DensePacker>, Vec<(AtlasRect, Box<[u8]>)>) {
+        (self.packers, self.textures)
+    }
 }

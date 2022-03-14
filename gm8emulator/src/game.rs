@@ -2145,7 +2145,7 @@ impl Game {
             self.process_window_events();
             self.frame()?;
             // 
-            ext::renderer().clear();
+            ext::renderer().lock().unwrap().clear();
             let instances = &self.room.instance_list;
             let mut iter = instances.iter_by_drawing();
             let mut source_x = 0;
@@ -2165,7 +2165,7 @@ impl Game {
                 let x = x - source_x as f64;
                 let y = y - source_y as f64;
                 let size = 31f64;
-                ext::renderer().draw_rect(x, y, size, size);
+                ext::renderer().lock().unwrap().draw_rect(x, y, size, size);
             }
             // 
             handle_scene_change!(self);

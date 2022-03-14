@@ -554,7 +554,20 @@ impl Renderer {
         1024
     }
 
-    pub fn push_atlases(&mut self, _atl: atlas::AtlasBuilder) -> Result<(), String> {
+    pub fn push_atlases(&mut self, atl: atlas::AtlasBuilder) -> Result<(), String> {
+        crate::external::renderer()
+            .lock()
+            .expect("Lock poisoned")
+            .load_sprites(atl);
+        // let (packers, mut sprites) = atl.into_inner();
+        // crate::ext_log!("Pushing atlases...");
+        // crate::ext_log!("{} packers", packers.len());
+        // crate::ext_log!("{} sprites", sprites.len());
+        // for (rect, data) in sprites {
+        //     crate::ext_log!("{} {}", rect.width(), rect.height());
+        //     crate::ext_log!("{:?}", data);
+        //     break;
+        // }
         // self.0.push_atlases(atl)
         Ok(())
     }
