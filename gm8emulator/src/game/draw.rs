@@ -7,7 +7,7 @@ use crate::{
         Version,
     },
     gml,
-    math::Real,
+    math::Real, render::RendererTrait,
 };
 use serde::{Deserialize, Serialize};
 

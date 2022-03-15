@@ -4,7 +4,7 @@ use crate::{
     math::Real,
     render::{
         atlas::{AtlasBuilder, AtlasRef},
-        BlendType, Renderer,
+        BlendType, Renderer, RendererTrait,
     },
 };
 use serde::{Deserialize, Serialize};

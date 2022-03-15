@@ -28,7 +28,7 @@ use crate::{
     input::MouseButton,
     instance::{Field, Instance, InstanceState},
     math::Real,
-    render::{BlendType, Fog, Light, Renderer, Scaling},
+    render::{BlendType, Fog, Light, Renderer, Scaling, RendererTrait},
     tile::Tile,
 };
 use image::RgbaImage;

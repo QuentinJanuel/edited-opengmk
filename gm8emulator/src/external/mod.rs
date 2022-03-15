@@ -5,7 +5,7 @@ pub mod input;
 pub mod renderer;
 
 use std::{
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{Arc, Mutex},
     pin::Pin,
     future::Future,
 };
@@ -18,7 +18,7 @@ pub trait External {
     fn time(&self) -> Arc<dyn time::Time>;
     fn logger(&self) -> Arc<dyn logger::Logger>;
     fn input(&self) -> Arc<dyn input::Input>;
-    fn renderer(&self) -> Arc<Mutex<dyn renderer::Renderer>>;
+    fn renderer(&self) -> Arc<dyn renderer::Renderer>;
 }
 
 type TExternal = Arc<Mutex<Option<Arc<dyn External + Sync + Send>>>>;
@@ -55,8 +55,8 @@ pub fn input() -> Arc<dyn input::Input> {
     external().input()
 }
 
-pub fn renderer() -> Arc<Mutex<dyn renderer::Renderer>> {
-    external().renderer().clone()
+pub fn renderer() -> Arc<dyn renderer::Renderer> {
+    external().renderer()
 }
 
 pub fn logger() -> Arc<dyn logger::Logger> {

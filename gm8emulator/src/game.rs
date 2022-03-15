@@ -35,7 +35,7 @@ use crate::{
     instance::{DummyFieldHolder, Instance, InstanceState},
     instancelist::{InstanceList, TileList},
     math::Real,
-    render::{atlas::AtlasBuilder, Renderer, RendererOptions, Scaling},
+    render::{atlas::AtlasBuilder, Renderer, RendererOptions, Scaling, RendererTrait},
     tile,
     types::{Colour, ID},
     util,
@@ -2145,28 +2145,28 @@ impl Game {
             self.process_window_events();
             self.frame()?;
             // 
-            ext::renderer().lock().unwrap().clear();
-            let instances = &self.room.instance_list;
-            let mut iter = instances.iter_by_drawing();
-            let mut source_x = 0;
-            let mut source_y = 0;
-            for view in &self.room.views {
-                if !view.visible {
-                    continue;
-                }
-                source_x = view.source_x;
-                source_y = view.source_y;
-                break;
-            }
-            while let Some(instance) = iter.next(instances) {
-                let instance = instances.get(instance);
-                let x: f64 = instance.x.get().into();
-                let y: f64 = instance.y.get().into();
-                let x = x - source_x as f64;
-                let y = y - source_y as f64;
-                let size = 31f64;
-                ext::renderer().lock().unwrap().draw_rect(x, y, size, size);
-            }
+            // ext::renderer().lock().unwrap().clear();
+            // let instances = &self.room.instance_list;
+            // let mut iter = instances.iter_by_drawing();
+            // let mut source_x = 0;
+            // let mut source_y = 0;
+            // for view in &self.room.views {
+            //     if !view.visible {
+            //         continue;
+            //     }
+            //     source_x = view.source_x;
+            //     source_y = view.source_y;
+            //     break;
+            // }
+            // while let Some(instance) = iter.next(instances) {
+            //     let instance = instances.get(instance);
+            //     let x: f64 = instance.x.get().into();
+            //     let y: f64 = instance.y.get().into();
+            //     let x = x - source_x as f64;
+            //     let y = y - source_y as f64;
+            //     let size = 31f64;
+            //     ext::renderer().lock().unwrap().draw_rect(x, y, size, size);
+            // }
             // 
             handle_scene_change!(self);
 

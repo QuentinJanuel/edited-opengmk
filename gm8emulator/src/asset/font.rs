@@ -3,7 +3,7 @@ use crate::{
     gml,
     render::{
         atlas::{AtlasBuilder, AtlasRef},
-        Renderer,
+        Renderer, RendererTrait,
     },
 };
 use encoding_rs::Encoding;

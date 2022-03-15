@@ -1,6 +1,6 @@
 use crate::{
     math::Real,
-    render::{atlas::AtlasRef, PrimitiveType, Renderer, VertexBuffer},
+    render::{atlas::AtlasRef, PrimitiveType, Renderer, VertexBuffer, RendererTrait},
 };
 use serde::{Deserialize, Serialize};
 

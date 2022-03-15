@@ -2,7 +2,7 @@ use crate::{
     game::{Game, GetAsset},
     gml::{self, Context},
     instance::Instance,
-    math::Real,
+    math::Real, render::RendererTrait,
 };
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
